@@ -1,0 +1,9 @@
+/.pylibs/
+/.venv/
+__pycache__/
+*.py[cod]
+/.env
+
+/文献/
+/*项目申报书.docx
+~$*
