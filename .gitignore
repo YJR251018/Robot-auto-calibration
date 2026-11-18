@@ -3,6 +3,9 @@
 __pycache__/
 *.py[cod]
 /.env
+/calibration-demo/
+/calibration-data/
+/rotation-coverage.json
 
 /文献/
 /*项目申报书.docx
