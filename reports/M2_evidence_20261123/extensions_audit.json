@@ -1,0 +1,130 @@
+{
+  "result": "PASS",
+  "results": {
+    "sampling": {
+      "status": {
+        "status": "complete",
+        "planned": 2160,
+        "completed": 2160,
+        "succeeded": 2160,
+        "failed": 0,
+        "baseline_passed": true,
+        "baseline_trials": 540
+      },
+      "means_mm": {
+        "ordered": 1.3027398124623562,
+        "random": 1.176112514749952,
+        "rotation_farthest": 0.9999252330870758
+      },
+      "mean_delta_mm": -0.17618728166287623,
+      "ci95_mm": [
+        -0.3136101580292582,
+        -0.031088175953608292
+      ],
+      "farthest_worse_repeats": 9,
+      "mixed_noise": {
+        "name": "mixed",
+        "rotation_deg": 0.3,
+        "translation_mm": 0.5,
+        "robot_rotation_deg": 0.0,
+        "robot_translation_mm": 0.0
+      },
+      "median_farthest_selection_seconds": 0.00876394999988861
+    },
+    "robot_noise": {
+      "status": {
+        "status": "complete",
+        "planned": 2160,
+        "completed": 2160,
+        "succeeded": 2160,
+        "failed": 0,
+        "baseline_passed": true,
+        "baseline_trials": 540
+      },
+      "means_mm": {
+        "ordered": 0.3806529164901914,
+        "random": 0.3926697256834159,
+        "rotation_farthest": 0.31287103396287197
+      },
+      "mean_delta_mm": -0.07979869172054387,
+      "ci95_mm": [
+        -0.1463660694638291,
+        -0.01227510845955737
+      ],
+      "farthest_worse_repeats": 9,
+      "mixed_noise": {
+        "name": "mixed",
+        "rotation_deg": 0.0,
+        "translation_mm": 0.0,
+        "robot_rotation_deg": 0.1,
+        "robot_translation_mm": 0.2
+      },
+      "median_farthest_selection_seconds": 0.007856299999957628
+    },
+    "scene2": {
+      "status": {
+        "status": "complete",
+        "planned": 2160,
+        "completed": 2160,
+        "succeeded": 2160,
+        "failed": 0,
+        "baseline_passed": true,
+        "baseline_trials": 540
+      },
+      "means_mm": {
+        "ordered": 1.0998341303253822,
+        "random": 1.1646275755359392,
+        "rotation_farthest": 0.9605937194607428
+      },
+      "mean_delta_mm": -0.2040338560751965,
+      "ci95_mm": [
+        -0.4022019352934428,
+        -0.009119106943800913
+      ],
+      "farthest_worse_repeats": 11,
+      "mixed_noise": {
+        "name": "mixed",
+        "rotation_deg": 0.3,
+        "translation_mm": 0.5,
+        "robot_rotation_deg": 0.0,
+        "robot_translation_mm": 0.0
+      },
+      "median_farthest_selection_seconds": 0.007932149999987814
+    },
+    "pool120": {
+      "status": {
+        "status": "complete",
+        "planned": 2160,
+        "completed": 2160,
+        "succeeded": 2160,
+        "failed": 0,
+        "baseline_passed": true,
+        "baseline_trials": 540
+      },
+      "means_mm": {
+        "ordered": 1.3027398124623562,
+        "random": 1.2789472306865288,
+        "rotation_farthest": 0.9658530693133345
+      },
+      "mean_delta_mm": -0.31309416137319446,
+      "ci95_mm": [
+        -0.5573727303439936,
+        -0.09780486238344842
+      ],
+      "farthest_worse_repeats": 7,
+      "mixed_noise": {
+        "name": "mixed",
+        "rotation_deg": 0.3,
+        "translation_mm": 0.5,
+        "robot_rotation_deg": 0.0,
+        "robot_translation_mm": 0.0
+      },
+      "median_farthest_selection_seconds": 0.020006499999908556
+    }
+  },
+  "prefix_checked_repeats": 30,
+  "identical_ordered_trials": 720,
+  "total_formal_trials": 8640,
+  "total_formal_failures": 0,
+  "note": "Separate settings with paired seed IDs; do not pool repeats or count replays as new data"
+}

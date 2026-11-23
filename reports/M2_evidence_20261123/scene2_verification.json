@@ -1,0 +1,9 @@
+{
+  "verification": {
+    "result": "PASS",
+    "trials": 2160,
+    "replayed_successes": 2160,
+    "raw_datasets": 30,
+    "note": "重放不增加独立重复数；失败试次保留，未伪称成功重放"
+  }
+}

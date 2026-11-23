@@ -1,0 +1,64 @@
+{
+  "tests": {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "-m",
+      "pytest",
+      "-q",
+      "--junitxml=reports/pytest-results.xml"
+    ],
+    "exit_code": 0,
+    "log": "reports/test_results.txt"
+  },
+  "example": {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "examples/basic_transforms.py"
+    ],
+    "exit_code": 0,
+    "log": "reports/example_output.txt"
+  },
+  "pip_check": {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "exit_code": 0,
+    "log": "reports/dependency_check.txt"
+  },
+  "git_whitespace": {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "log": "reports/git_diff_check.txt"
+  },
+  "git_status": {
+    "command": [
+      "git",
+      "-c",
+      "core.quotepath=false",
+      "status",
+      "--short"
+    ],
+    "exit_code": 0,
+    "log": "reports/git_status_final.txt"
+  },
+  "preservation": {
+    "unchanged_files": 13,
+    "append_only_files": [
+      "AGENTS.md",
+      "README.md",
+      "src/README.md"
+    ],
+    "result": "PASS"
+  }
+}

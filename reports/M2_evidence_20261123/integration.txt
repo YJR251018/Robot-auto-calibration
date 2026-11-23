@@ -1,0 +1,71 @@
+............................................F                            [100%]
+================================== FAILURES ===================================
+________________ test_cli_rejects_existing_and_outside_output _________________
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\runner.py", line 361, in from_call
+  |     result: TResult | None = func()
+  |                              ^^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\runner.py", line 250, in <lambda>
+  |     lambda: runtest_hook(item=item, **kwds),
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\pluggy\_caller.py", line 197, in __call__
+  |     return self._hookexec(
+  |            ^^^^^^^^^^^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\pluggy\_manager.py", line 183, in _hookexec
+  |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\logging.py", line 878, in pytest_runtest_call
+  |     yield
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\capture.py", line 906, in pytest_runtest_call
+  |     return (yield)
+  |             ^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\skipping.py", line 268, in pytest_runtest_call
+  |     return (yield)
+  |             ^^^^^
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\threadexception.py", line 143, in pytest_runtest_call
+  |     collect_thread_exception(item.config)
+  |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\threadexception.py", line 68, in collect_thread_exception
+  |     raise ExceptionGroup("multiple thread exception warnings", errors)
+  | ExceptionGroup: multiple thread exception warnings (2 sub-exceptions)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\Program Files\Python3.12\Lib\threading.py", line 1052, in _bootstrap_inner
+    |     self.run()
+    |   File "D:\Program Files\Python3.12\Lib\threading.py", line 989, in run
+    |     self._target(*self._args, **self._kwargs)
+    |   File "D:\Program Files\Python3.12\Lib\subprocess.py", line 1597, in _readerthread
+    |     buffer.append(fh.read())
+    |                   ^^^^^^^^^
+    | UnicodeDecodeError: 'gbk' codec can't decode byte 0xaa in position 83: illegal multibyte sequence
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\threadexception.py", line 54, in collect_thread_exception
+    |     warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+    | pytest.PytestUnhandledThreadExceptionWarning: Exception in thread Thread-4 (_readerthread)
+    | Enable tracemalloc to get traceback where the object was allocated.
+    | See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    +---------------- 2 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\Program Files\Python3.12\Lib\threading.py", line 1052, in _bootstrap_inner
+    |     self.run()
+    |   File "D:\Program Files\Python3.12\Lib\threading.py", line 989, in run
+    |     self._target(*self._args, **self._kwargs)
+    |   File "D:\Program Files\Python3.12\Lib\subprocess.py", line 1597, in _readerthread
+    |     buffer.append(fh.read())
+    |                   ^^^^^^^^^
+    | UnicodeDecodeError: 'gbk' codec can't decode byte 0x80 in position 668: illegal multibyte sequence
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "D:\Research\Robot-auto-calibration\.venv\Lib\site-packages\_pytest\threadexception.py", line 54, in collect_thread_exception
+    |     warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+    | pytest.PytestUnhandledThreadExceptionWarning: Exception in thread Thread-2 (_readerthread)
+    | Enable tracemalloc to get traceback where the object was allocated.
+    | See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    +------------------------------------
+=========================== short test summary info ===========================
+FAILED tests/test_m2_experiments.py::test_cli_rejects_existing_and_outside_output
+1 failed, 44 passed in 5.84s

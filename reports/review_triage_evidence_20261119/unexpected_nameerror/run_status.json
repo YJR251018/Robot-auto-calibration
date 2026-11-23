@@ -1,0 +1,6 @@
+{
+  "status": "complete",
+  "baseline_passed": true,
+  "trials": 8,
+  "solver_failures": 6
+}

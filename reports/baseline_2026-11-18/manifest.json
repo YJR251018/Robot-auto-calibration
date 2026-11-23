@@ -1,0 +1,66 @@
+[
+  {
+    "path": ".gitignore",
+    "sha256": "d88287632841544e4e70520c33a87da0e21ac191075eb02e8b9e4b33cf9533ee"
+  },
+  {
+    "path": "AGENTS.md",
+    "sha256": "6644d75fb62f1b39a0fc67488e447042b2ff1378721233151d63fcc8d09a10aa"
+  },
+  {
+    "path": "INITIALIZATION.md",
+    "sha256": "9e5b0ad8bc753b073e4101b8746d4be984fc656630bf2a431a0920e54b4560c0"
+  },
+  {
+    "path": "README.md",
+    "sha256": "b45f045782abca055dab171204dcf2ea414f0375fd247be40743e2157e776c0c"
+  },
+  {
+    "path": "requirements-lock.txt",
+    "sha256": "f03886c24ed106a47ddc88aa24abc19cff01733b0e10ba4c7510882d9f5d622c"
+  },
+  {
+    "path": "requirements.txt",
+    "sha256": "0ca50657a8adb58c08301af1bfbc1bf6a7191565c11bb16e0450faeec54c1450"
+  },
+  {
+    "path": "基于视觉的机器人手眼自动标定方法研究_广东工业大学创新训练项目申报书.docx",
+    "sha256": "3c4facadd67cb6bb1e6aa037baaff20aae9267ba3cf9dda12e3d71285099dfb0"
+  },
+  {
+    "path": "src/README.md",
+    "sha256": "6df6f65390c35ef3bc5b9022065dd8c1834f5c3bf7b5532f13aa167ba1660345"
+  },
+  {
+    "path": "tests/test_environment.py",
+    "sha256": "fbc02e54713226b0c1a529ebe93d552b51bbc66176fdd7ea1730d4c35e9c4ba8"
+  },
+  {
+    "path": "文献/一种结合手眼标定与TCP标定的标定方法_袁彬.pdf",
+    "sha256": "798b461baa4614d5801aa949040eb2217afe916c28b9aa6e698f83622eaf4b8b"
+  },
+  {
+    "path": "文献/基于上位机的工业机器人磨头工具坐标系自动标定技术研究_梁忠伟.pdf",
+    "sha256": "532525b04a23ebe0c42beb10809ad1ad9eddd9673df6653f0b5fe72308589ffd"
+  },
+  {
+    "path": "文献/基于机器视觉的工业机器人手眼标定方法研究.pdf",
+    "sha256": "af2428c1935b0c5304446edce2555848bac18c6237c84167798a0728a339f1b2"
+  },
+  {
+    "path": "文献/基于视觉检测的六自由度工业机器人自动标定系统研究_张夫奕.pdf",
+    "sha256": "b90f371a2aad2443b1e9c96d7f05b865f65df041cd31776b003a1c218eaee06d"
+  },
+  {
+    "path": "文献/工业机器人智能化手眼标定系统研究_苏萌.pdf",
+    "sha256": "46decce732fa8f647a97e59d7948745e12a22d6de558351a32384e9ce40d414a"
+  },
+  {
+    "path": "文献/工业机器人末端执行器自动标定系统研究_姜丽晨.pdf",
+    "sha256": "e3ec70bf743f923354972bbae8652ecee3a3850a2ff43812fce8b513c951016d"
+  },
+  {
+    "path": "文献/打磨机器人工具工件高精度自动标定系统开发_冯东远.pdf",
+    "sha256": "86335ba1646adce64c49961e87e27e368f045736809f603d39f43585a4966aae"
+  }
+]

@@ -1,0 +1,312 @@
+experiments/W2_projection_20261123/opencv_projectpoints_doc.txt:3: trailing whitespace.
++.   
+experiments/W2_projection_20261123/opencv_projectpoints_doc.txt:11: trailing whitespace.
++.   
+experiments/W2_projection_20261123/opencv_projectpoints_doc.txt:16: trailing whitespace.
++.   
+experiments/W2_projection_20261123/opencv_projectpoints_doc.txt:19: trailing whitespace.
++.   
+experiments/W2_projection_20261123/opencv_projectpoints_doc.txt:37: trailing whitespace.
++.   
+reports/M2_evidence_20261123/changes.patch:2548: trailing whitespace.
++ 
+reports/M2_evidence_20261123/changes.patch:2550: trailing whitespace.
++ 
+reports/M2_evidence_20261123/integration.txt:40: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.txt:42: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.txt:59: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.txt:61: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.xml:37: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.xml:39: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.xml:56: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/integration.xml:58: trailing whitespace.
++    | 
+reports/M2_evidence_20261123/tracked_before.patch:19: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:55: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:58: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:61: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:64: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:76: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:120: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:123: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:132: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:135: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:145: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:150: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:156: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:161: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:164: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:166: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:175: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:178: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:181: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:187: trailing whitespace.
++ 
+reports/M2_evidence_20261123/tracked_before.patch:202: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:19: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:33: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:36: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:40: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:43: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:51: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:104: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:107: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:110: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:113: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:128: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:152: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:155: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:161: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:164: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:167: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:170: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:178: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:181: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:184: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:187: trailing whitespace.
++ 
+reports/W2_evidence_20261123/tracked_after.patch:207: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:5: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:14: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:19: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:26: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:27: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:33: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:36: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:114: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:193: trailing whitespace.
++ 
+reports/fix_evidence_20261119/changes.patch:194: trailing whitespace.
++ 
+reports/fix_evidence_20261119/p1_red.txt:15: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.txt:22: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.txt:41: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.txt:48: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.txt:67: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.txt:74: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:11: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:18: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:34: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:41: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:57: trailing whitespace.
++    
+reports/fix_evidence_20261119/p1_red.xml:64: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.txt:11: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.txt:15: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.txt:21: trailing whitespace.
++E         
+reports/fix_evidence_20261119/p2_red.txt:39: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.txt:68: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.txt:97: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.txt:126: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.txt:152: trailing whitespace.
++tests\test_review_fixes.py:185: 
+reports/fix_evidence_20261119/p2_red.txt:195: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.txt:198: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.txt:204: trailing whitespace.
++E         
+reports/fix_evidence_20261119/p2_red.txt:216: trailing whitespace.
++tests\test_review_fixes.py:205: 
+reports/fix_evidence_20261119/p2_red.xml:7: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.xml:11: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.xml:17: trailing whitespace.
++E         
+reports/fix_evidence_20261119/p2_red.xml:32: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.xml:58: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.xml:84: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.xml:110: trailing whitespace.
++tests\test_review_fixes.py:175: 
+reports/fix_evidence_20261119/p2_red.xml:133: trailing whitespace.
++tests\test_review_fixes.py:185: 
+reports/fix_evidence_20261119/p2_red.xml:173: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.xml:176: trailing whitespace.
++    
+reports/fix_evidence_20261119/p2_red.xml:182: trailing whitespace.
++E         
+reports/fix_evidence_20261119/p2_red.xml:191: trailing whitespace.
++tests\test_review_fixes.py:205: 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:19: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:55: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:58: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:61: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:64: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:76: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:120: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:123: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:132: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:135: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:145: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:150: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:156: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:161: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:164: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:166: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:175: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:178: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:181: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:187: trailing whitespace.
++ 
+reports/fix_evidence_20261119/tracked_worktree_before.patch:202: trailing whitespace.
++ 
+reports/opencv_handeye_api.txt:3: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:25: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:31: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:36: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:39: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:43: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:45: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:92: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:113: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:120: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:123: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:127: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:133: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:136: trailing whitespace.
++.   
+reports/opencv_handeye_api.txt:140: trailing whitespace.
++.   
+reviews/M1_independent_review.md:3: trailing whitespace.
++审查日期：2026-11-19  
+reviews/M1_independent_review.md:4: trailing whitespace.
++审查范围：坐标/真值隔离、退化诊断、噪声模型、关卡/失败机制、统计一致性、复现链路、代码鲁棒性。  
+reviews/M1_independent_review.md:5: trailing whitespace.
++审查方法：源码逐模块审查 + pytest 124 项测试执行 + 快速独立实验（60 次求解）验证 + 已有复算报告核对。  
+reviews/second_review.md:3: trailing whitespace.
++审查日期：2026-11-19  
+reviews/second_review.md:4: trailing whitespace.
++审查依据：第一轮审查报告 `reviews/M1_independent_review.md`、Codex 修复报告 `reports/fix_report.md`、修复分诊 `reports/review_triage.md`。  
+reviews/second_review.md:5: trailing whitespace.
++审查方法：实际修改源码逐行审查 + 143 项全量测试执行 + 独立边界验证 + 数学一致性复核。  
+reviews/second_review.md:13: trailing whitespace.
++**修改文件**：`src/handeye/experiments.py`  
+reviews/second_review.md:29: trailing whitespace.
++**修改文件**：`src/handeye/experiments.py`  
+reviews/second_review.md:42: trailing whitespace.
++**修改文件**：`src/handeye/plotting.py`  
+reviews/second_review.md:59: trailing whitespace.
++**新增文件**：`tests/test_review_fixes.py`（其中 4 项）  
+reviews/second_review.md:70: trailing whitespace.
++**新增文件**：`tests/test_review_fixes.py`（其中 1 项）  
+reviews/second_review.md:84: trailing whitespace.
++**第一轮审查结论**：`np.asarray([]).reshape(-1, 3)` 会抛出 ValueError。  
+reviews/second_review.md:85: trailing whitespace.
++**Codex 核验结论**：在当前 NumPy 2.5.5 下返回 `shape=(0, 3)`，`motion_diagnostics` 正常返回 `nondegenerate=False`。  
+reviews/second_review.md:125: trailing whitespace.
++**位置**：`src/handeye/experiments.py`  
+reviews/second_review.md:134: trailing whitespace.
++**位置**：`src/handeye/experiments.py:146` 和 `:210`  
+reviews/second_review.md:143: trailing whitespace.
++**位置**：`src/handeye/experiments.py:190–193`  

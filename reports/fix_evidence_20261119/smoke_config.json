@@ -1,0 +1,51 @@
+{
+  "repeats": 2,
+  "seed_start": 20261118,
+  "noise_seed_start": 20271118,
+  "noise_sample_count": 20,
+  "sample_counts": [
+    8,
+    12,
+    20
+  ],
+  "rotation_noise_deg": [
+    0.0,
+    0.1,
+    0.3
+  ],
+  "translation_noise_mm": [
+    0.0,
+    0.1,
+    0.5
+  ],
+  "sample_rotation_noise_deg": 0.3,
+  "sample_translation_noise_mm": 0.5,
+  "rotation_threshold_rad": 1e-06,
+  "translation_threshold_m": 1e-06,
+  "methods": [
+    "PARK",
+    "TSAI"
+  ],
+  "scene": {
+    "handeye_rotvec_rad": [
+      0.2,
+      -0.15,
+      0.3
+    ],
+    "handeye_translation_m": [
+      0.05,
+      0.02,
+      0.1
+    ],
+    "target_rotvec_rad": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_translation_m": [
+      0.6,
+      0.0,
+      0.3
+    ]
+  }
+}

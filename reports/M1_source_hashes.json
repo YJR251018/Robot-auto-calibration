@@ -1,0 +1,13 @@
+{
+  "src/handeye/calibration.py": "d59777df5f31d41d02832da643f07366490022648d4924ebf69268ba4fd242ba",
+  "src/handeye/experiments.py": "df56fa81a80aba38049da319cf28d2b60658daa8dbef5fd4fabd91748403fbf7",
+  "src/handeye/metrics.py": "210f7064a514fdd8844dba0534eded852b315ce39744338a8510bbe5d7eeb028",
+  "src/handeye/plotting.py": "3869503a8858a02637aaff00ed5f80ae0e15c4c152e6730fdb11e4f131eba3fa",
+  "src/handeye/simulation.py": "f0f4c78c24a648ff8c6f59d52597b632fcc6720f942636d8a0392b08f8a2c5ed",
+  "src/handeye/transforms.py": "b348277dfcc4306d1cadd5b0d6d1adc1997d5b79f4e01eae49d3082a25362e3b",
+  "src/handeye/__init__.py": "7a57b99104ee4f2b49f1eaa8278ed9e61dbee794bf4480102dd3f3f8ba9d9026",
+  "scripts/run_m1.py": "498c88b6988c67ec8029ddec3989ce46e50f8c0d22e837985c060bbb0bed6e33",
+  "scripts/verify_m1.py": "f7aa085f7d2f3f481891daa1a95c731937e9890680f71636a33a9aa2bdbb583d",
+  "configs/m1_v0_1.json": "65ecab07aafc08a9c3428b4316496447a81c65f32728b4195e20077374c8b766",
+  "tests/test_m1.py": "1bc8265be8aa343dfabe6b8117bec8598f81173c18e7d4feaf36ece248a6078d"
+}

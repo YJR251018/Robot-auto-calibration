@@ -1,0 +1,3 @@
+# Frozen experiments and source fingerprints require byte-identical checkouts.
+# Preserve existing bytes on all platforms; do not use core.autocrlf here.
+* -text

@@ -1,0 +1,20 @@
+{
+  "repeats": 30,
+  "candidates": 3600,
+  "visible": 1941,
+  "rejected": 1659,
+  "reasons": {
+    "visible": 1941,
+    "margin": 117,
+    "outside_image": 1542
+  },
+  "min_visible_per_repeat": 55,
+  "predicted_candidates": 3000,
+  "prediction_mismatches": 0,
+  "baseline_solves": 60,
+  "baseline_failures": 0,
+  "max_closure_abs": 7.771561172376096e-16,
+  "max_projection_error_px": 4.547473508864641e-13,
+  "max_rotation_error_deg": 2.276400077835688e-13,
+  "max_translation_error_mm": 1.83701237027825e-12
+}

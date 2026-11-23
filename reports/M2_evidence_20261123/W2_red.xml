@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.616" timestamp="2026-11-23T20:58:09.910249+08:00" hostname="Legion-Y7000p"><testcase classname="" name="tests.test_camera" time="0.000"><error message="collection failure">ImportError while importing test module 'D:\Research\Robot-auto-calibration\tests\test_camera.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+D:\Program Files\Python3.12\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_camera.py:10: in &lt;module&gt;
+    from handeye.camera import (Camera, board_grid, project_points, measure_visibility,
+E   ModuleNotFoundError: No module named 'handeye.camera'</error></testcase></testsuite></testsuites>

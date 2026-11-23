@@ -1,12 +1,27 @@
-/.pylibs/
-/.venv/
+# Project-local Python environment
+.venv/
+
+# Python and test caches
 __pycache__/
 *.py[cod]
-/.env
-/calibration-demo/
-/calibration-data/
-/rotation-coverage.json
+.pytest_cache/
 
+# Local editor settings
+.vscode/
+.idea/
+
+# Local private materials and downloaded third-party full texts
+/*.docx
 /文献/
-/*项目申报书.docx
-~$*
+/local_only/
+/reports/proposal_text_local.txt
+
+# Local organization snapshots; reports and scientific evidence stay versioned
+/reports/cleanup_20261123/before/
+/reports/cleanup_20261123/before_manifest.json
+/reports/cleanup_20261123/content_scan_initial.json
+/reports/cleanup_20261123/push_result.json
+
+# Credentials are local only
+.env
+.env.*

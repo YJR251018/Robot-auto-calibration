@@ -1,0 +1,77 @@
+{
+  "result": "PASS",
+  "existing_files_checked": 4145,
+  "changed_existing_only": [
+    "AGENTS.md",
+    "README.md",
+    "plans/progress.json"
+  ],
+  "deleted_existing": [],
+  "continuation_existing_changes": [
+    "plans/progress.json",
+    "README.md",
+    "AGENTS.md",
+    "docs/PROJECT_SPEC.md"
+  ],
+  "head_unchanged": true,
+  "index_unchanged": true,
+  "branch": "feat/m2-sampling-20261123",
+  "final_pytest": {
+    "tests": 226,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "frozen_runs": {
+    "M2_sampling_20261123": {
+      "artifacts_checked": 2208,
+      "pinned_code_files_unchanged": 14
+    },
+    "M2_robot_noise_20261123": {
+      "artifacts_checked": 2208,
+      "pinned_code_files_unchanged": 14
+    },
+    "M2_scene2_20261123": {
+      "artifacts_checked": 2208,
+      "pinned_code_files_unchanged": 14
+    },
+    "M2_pool120_20261123": {
+      "artifacts_checked": 2208,
+      "pinned_code_files_unchanged": 14
+    },
+    "W2_projection_20261123": {
+      "artifacts_checked": 74,
+      "pinned_code_files_unchanged": 19
+    }
+  },
+  "links_checked": 26,
+  "new_source_config_doc_plan_files": [
+    "src/handeye/camera.py",
+    "src/handeye/evaluation.py",
+    "src/handeye/m2_experiments.py",
+    "src/handeye/m2_plotting.py",
+    "src/handeye/m2_verification.py",
+    "src/handeye/projection_experiment.py",
+    "src/handeye/projection_verification.py",
+    "src/handeye/sampling.py",
+    "tests/test_camera.py",
+    "tests/test_m2_experiments.py",
+    "tests/test_m2_extensions.py",
+    "tests/test_m2_math.py",
+    "tests/test_projection_experiment.py",
+    "scripts/run_m2.py",
+    "scripts/run_projection.py",
+    "scripts/verify_m2.py",
+    "scripts/verify_projection.py",
+    "configs/m2_pool120_v0_1.json",
+    "configs/m2_robot_noise_v0_1.json",
+    "configs/m2_sampling_v0_1.json",
+    "configs/m2_scene2_v0_1.json",
+    "configs/m2_smoke.json",
+    "configs/w2_projection_v0_1.json",
+    "docs/M2_sampling_guide.md",
+    "docs/PROJECT_SPEC.md",
+    "docs/W2_projection_guide.md"
+  ],
+  "diff_file": "reports/M2_evidence_20261123/changes.patch"
+}

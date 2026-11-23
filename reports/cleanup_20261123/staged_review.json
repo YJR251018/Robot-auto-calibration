@@ -1,0 +1,24 @@
+{
+  "result": "PASS",
+  "reviewed_tree": "4cdf53ab831cfaec4e5dbfe4c28e8e18e893a413",
+  "files": 13545,
+  "MiB": 47.34,
+  "git_export_byte_differences": [],
+  "credential_findings": [],
+  "private_material_excluded": true,
+  "tests": {
+    "pytest": {
+      "tests": 226,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "fresh_checkout_pytest": {
+      "tests": 226,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "note": "Final record itself will be added after review; code and frozen experiment blobs are unchanged from tested export"
+}

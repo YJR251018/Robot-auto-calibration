@@ -1,0 +1,362 @@
+[
+  {
+    "seed": 510000,
+    "method": "PARK",
+    "rotation_error_deg": 8.651788566824363e-15,
+    "translation_error_mm": 1.2475544622612413e-13
+  },
+  {
+    "seed": 510000,
+    "method": "TSAI",
+    "rotation_error_deg": 1.766947736782974e-14,
+    "translation_error_mm": 2.527939140232592e-13
+  },
+  {
+    "seed": 510001,
+    "method": "PARK",
+    "rotation_error_deg": 1.0344417981772493e-14,
+    "translation_error_mm": 1.869964319252663e-13
+  },
+  {
+    "seed": 510001,
+    "method": "TSAI",
+    "rotation_error_deg": 2.610119195710016e-14,
+    "translation_error_mm": 2.540999830491574e-13
+  },
+  {
+    "seed": 510002,
+    "method": "PARK",
+    "rotation_error_deg": 1.4919080570230762e-14,
+    "translation_error_mm": 2.364320550091284e-13
+  },
+  {
+    "seed": 510002,
+    "method": "TSAI",
+    "rotation_error_deg": 1.6142439939681288e-14,
+    "translation_error_mm": 1.5091097240551816e-13
+  },
+  {
+    "seed": 510003,
+    "method": "PARK",
+    "rotation_error_deg": 8.193572205557594e-15,
+    "translation_error_mm": 7.577386519575497e-14
+  },
+  {
+    "seed": 510003,
+    "method": "TSAI",
+    "rotation_error_deg": 2.5204030566212983e-14,
+    "translation_error_mm": 2.434800425099963e-13
+  },
+  {
+    "seed": 510004,
+    "method": "PARK",
+    "rotation_error_deg": 6.742867555752542e-15,
+    "translation_error_mm": 1.077764583621373e-13
+  },
+  {
+    "seed": 510004,
+    "method": "TSAI",
+    "rotation_error_deg": 2.565933657896655e-14,
+    "translation_error_mm": 1.1085955284783107e-13
+  },
+  {
+    "seed": 510005,
+    "method": "PARK",
+    "rotation_error_deg": 1.0064306457215696e-14,
+    "translation_error_mm": 7.481466367548145e-14
+  },
+  {
+    "seed": 510005,
+    "method": "TSAI",
+    "rotation_error_deg": 1.4849104747544885e-14,
+    "translation_error_mm": 1.3297535223456004e-13
+  },
+  {
+    "seed": 510006,
+    "method": "PARK",
+    "rotation_error_deg": 5.631418524347134e-15,
+    "translation_error_mm": 9.910722837601152e-14
+  },
+  {
+    "seed": 510006,
+    "method": "TSAI",
+    "rotation_error_deg": 2.182494466670576e-13,
+    "translation_error_mm": 1.83701237027825e-12
+  },
+  {
+    "seed": 510007,
+    "method": "PARK",
+    "rotation_error_deg": 1.7037711890012725e-14,
+    "translation_error_mm": 3.941297845595826e-13
+  },
+  {
+    "seed": 510007,
+    "method": "TSAI",
+    "rotation_error_deg": 1.97707743551661e-14,
+    "translation_error_mm": 2.2142031105300068e-13
+  },
+  {
+    "seed": 510008,
+    "method": "PARK",
+    "rotation_error_deg": 2.4437210385742568e-14,
+    "translation_error_mm": 2.1186364663711192e-13
+  },
+  {
+    "seed": 510008,
+    "method": "TSAI",
+    "rotation_error_deg": 2.276400077835688e-13,
+    "translation_error_mm": 7.555193738944882e-13
+  },
+  {
+    "seed": 510009,
+    "method": "PARK",
+    "rotation_error_deg": 1.3161929483687436e-14,
+    "translation_error_mm": 2.407706197318431e-13
+  },
+  {
+    "seed": 510009,
+    "method": "TSAI",
+    "rotation_error_deg": 1.0636381293634285e-14,
+    "translation_error_mm": 1.701444517948518e-13
+  },
+  {
+    "seed": 510010,
+    "method": "PARK",
+    "rotation_error_deg": 1.148643190733988e-14,
+    "translation_error_mm": 8.86659237418113e-13
+  },
+  {
+    "seed": 510010,
+    "method": "TSAI",
+    "rotation_error_deg": 1.516376414471425e-14,
+    "translation_error_mm": 6.012462478564703e-13
+  },
+  {
+    "seed": 510011,
+    "method": "PARK",
+    "rotation_error_deg": 4.8755418349935755e-15,
+    "translation_error_mm": 6.09122650856296e-13
+  },
+  {
+    "seed": 510011,
+    "method": "TSAI",
+    "rotation_error_deg": 2.399305051767981e-14,
+    "translation_error_mm": 6.736447455048117e-14
+  },
+  {
+    "seed": 510012,
+    "method": "PARK",
+    "rotation_error_deg": 1.7136555258585265e-14,
+    "translation_error_mm": 1.5265566588595902e-13
+  },
+  {
+    "seed": 510012,
+    "method": "TSAI",
+    "rotation_error_deg": 4.5019954116610344e-15,
+    "translation_error_mm": 2.6522554782438244e-13
+  },
+  {
+    "seed": 510013,
+    "method": "PARK",
+    "rotation_error_deg": 4.787507444269956e-15,
+    "translation_error_mm": 2.540999830491574e-13
+  },
+  {
+    "seed": 510013,
+    "method": "TSAI",
+    "rotation_error_deg": 1.2753371126774704e-14,
+    "translation_error_mm": 6.7720902829718e-14
+  },
+  {
+    "seed": 510014,
+    "method": "PARK",
+    "rotation_error_deg": 1.0388416902334373e-14,
+    "translation_error_mm": 3.1357736002957997e-13
+  },
+  {
+    "seed": 510014,
+    "method": "TSAI",
+    "rotation_error_deg": 1.7099870061890864e-14,
+    "translation_error_mm": 5.6050630877642024e-14
+  },
+  {
+    "seed": 510015,
+    "method": "PARK",
+    "rotation_error_deg": 1.3450134564341251e-14,
+    "translation_error_mm": 2.7097246932071045e-14
+  },
+  {
+    "seed": 510015,
+    "method": "TSAI",
+    "rotation_error_deg": 1.2964111160754612e-14,
+    "translation_error_mm": 1.1188630228279524e-13
+  },
+  {
+    "seed": 510016,
+    "method": "PARK",
+    "rotation_error_deg": 8.857509831403287e-15,
+    "translation_error_mm": 1.8942672006970054e-13
+  },
+  {
+    "seed": 510016,
+    "method": "TSAI",
+    "rotation_error_deg": 1.766156586714323e-14,
+    "translation_error_mm": 8.362734666696146e-14
+  },
+  {
+    "seed": 510017,
+    "method": "PARK",
+    "rotation_error_deg": 1.1411055014148671e-14,
+    "translation_error_mm": 1.7070948266282503e-13
+  },
+  {
+    "seed": 510017,
+    "method": "TSAI",
+    "rotation_error_deg": 2.1803035909069182e-14,
+    "translation_error_mm": 1.1449174941446927e-13
+  },
+  {
+    "seed": 510018,
+    "method": "PARK",
+    "rotation_error_deg": 1.9781148670375194e-14,
+    "translation_error_mm": 4.344434768182728e-13
+  },
+  {
+    "seed": 510018,
+    "method": "TSAI",
+    "rotation_error_deg": 2.5092317045764168e-14,
+    "translation_error_mm": 1.4509590519578067e-13
+  },
+  {
+    "seed": 510019,
+    "method": "PARK",
+    "rotation_error_deg": 5.6779404663110766e-15,
+    "translation_error_mm": 6.890237792366865e-13
+  },
+  {
+    "seed": 510019,
+    "method": "TSAI",
+    "rotation_error_deg": 1.366535764617605e-14,
+    "translation_error_mm": 2.453514781374947e-13
+  },
+  {
+    "seed": 510020,
+    "method": "PARK",
+    "rotation_error_deg": 6.777119707642505e-15,
+    "translation_error_mm": 6.062405617408379e-13
+  },
+  {
+    "seed": 510020,
+    "method": "TSAI",
+    "rotation_error_deg": 2.1678665179201442e-14,
+    "translation_error_mm": 2.6333536614000956e-13
+  },
+  {
+    "seed": 510021,
+    "method": "PARK",
+    "rotation_error_deg": 1.590538726319753e-14,
+    "translation_error_mm": 3.6083916265107585e-13
+  },
+  {
+    "seed": 510021,
+    "method": "TSAI",
+    "rotation_error_deg": 1.873821070587051e-14,
+    "translation_error_mm": 2.090035850198101e-13
+  },
+  {
+    "seed": 510022,
+    "method": "PARK",
+    "rotation_error_deg": 7.80371248658859e-15,
+    "translation_error_mm": 1.1087312444032212e-12
+  },
+  {
+    "seed": 510022,
+    "method": "TSAI",
+    "rotation_error_deg": 1.7802657951706133e-14,
+    "translation_error_mm": 8.946868911166325e-14
+  },
+  {
+    "seed": 510023,
+    "method": "PARK",
+    "rotation_error_deg": 8.294831774169136e-15,
+    "translation_error_mm": 2.8609792490763985e-14
+  },
+  {
+    "seed": 510023,
+    "method": "TSAI",
+    "rotation_error_deg": 2.4821684397098388e-14,
+    "translation_error_mm": 4.119155594299825e-13
+  },
+  {
+    "seed": 510024,
+    "method": "PARK",
+    "rotation_error_deg": 6.4828409479664855e-15,
+    "translation_error_mm": 2.1791330888979172e-13
+  },
+  {
+    "seed": 510024,
+    "method": "TSAI",
+    "rotation_error_deg": 2.6058935615754143e-14,
+    "translation_error_mm": 1.9894185169832339e-13
+  },
+  {
+    "seed": 510025,
+    "method": "PARK",
+    "rotation_error_deg": 1.7110988918478165e-14,
+    "translation_error_mm": 5.380328128502516e-13
+  },
+  {
+    "seed": 510025,
+    "method": "TSAI",
+    "rotation_error_deg": 1.6743836676871072e-14,
+    "translation_error_mm": 1.5316734030160287e-13
+  },
+  {
+    "seed": 510026,
+    "method": "PARK",
+    "rotation_error_deg": 2.439927358521766e-15,
+    "translation_error_mm": 3.2159359137519294e-13
+  },
+  {
+    "seed": 510026,
+    "method": "TSAI",
+    "rotation_error_deg": 7.66626361424544e-15,
+    "translation_error_mm": 1.2162873585351636e-13
+  },
+  {
+    "seed": 510027,
+    "method": "PARK",
+    "rotation_error_deg": 6.18285719527178e-15,
+    "translation_error_mm": 1.5658702246508168e-13
+  },
+  {
+    "seed": 510027,
+    "method": "TSAI",
+    "rotation_error_deg": 1.8714918300143025e-14,
+    "translation_error_mm": 1.988208040134332e-13
+  },
+  {
+    "seed": 510028,
+    "method": "PARK",
+    "rotation_error_deg": 3.590728113753171e-15,
+    "translation_error_mm": 3.473781053520972e-13
+  },
+  {
+    "seed": 510028,
+    "method": "TSAI",
+    "rotation_error_deg": 1.23198676094508e-14,
+    "translation_error_mm": 1.3256738189514616e-13
+  },
+  {
+    "seed": 510029,
+    "method": "PARK",
+    "rotation_error_deg": 8.86646234165468e-15,
+    "translation_error_mm": 2.7592466021372193e-13
+  },
+  {
+    "seed": 510029,
+    "method": "TSAI",
+    "rotation_error_deg": 1.944004352999713e-14,
+    "translation_error_mm": 9.570895620573756e-14
+  }
+]

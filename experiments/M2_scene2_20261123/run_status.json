@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "planned": 2160,
+  "completed": 2160,
+  "succeeded": 2160,
+  "failed": 0,
+  "baseline_passed": true,
+  "baseline_trials": 540
+}

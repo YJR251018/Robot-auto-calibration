@@ -1,0 +1,37 @@
+ M .gitignore
+ M README.md
+ D first_handeye_experiment.py
+ M requirements.txt
+ D robot_calibration/__init__.py
+ D robot_calibration/__main__.py
+ D robot_calibration/app.py
+ D robot_calibration/calibration.py
+ D robot_calibration/data.py
+ D robot_calibration/demo.py
+ D robot_calibration/experiment.py
+ D robot_calibration/geometry.py
+ D robot_calibration/sampling.py
+ D tests/test_calibration.py
+ D tests/test_workbench.py
+ D 任务回顾.md
+ D 阶段0_手眼标定开源项目调研.md
+ D 项目总路线.md
+?? AGENTS.md
+?? "CONTINUE WORK.md"
+?? INITIALIZATION.md
+?? configs/
+?? docs/
+?? examples/
+?? experiments/
+?? pytest.ini
+?? reports/
+?? requirements-lock.txt
+?? research_output/
+?? reviews/
+?? scripts/
+?? src/
+?? tests/test_environment.py
+?? tests/test_m1.py
+?? tests/test_transforms.py
+?? 基于视觉的机器人手眼自动标定方法研究_广东工业大学创新训练项目申报书.docx
+?? 文献/

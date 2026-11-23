@@ -1,0 +1,121 @@
+FFF.......F                                                              [100%]
+================================== FAILURES ===================================
+_______ test_unexpected_error_persisted_then_reraised[solve-NameError] ________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p1-red-temp/test_unexpected_error_persiste0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001204B9BC5C0>
+phase = 'solve', error_type = <class 'NameError'>
+
+    @pytest.mark.parametrize("phase,error_type", [("solve", NameError), ("solve", TypeError),
+                                                 ("evaluate", ValueError)])
+    def test_unexpected_error_persisted_then_reraised(tmp_path, monkeypatch, phase, error_type):
+        target = "calibrate_hand_eye" if phase == "solve" else "pose_error"
+        real = getattr(experiments, target)
+        calls = 0
+    
+        def raise_programmer_error_after_baseline(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 5:  # 2 repeats × 2 methods 已通过无噪声关卡。
+                raise error_type("FIX_injected_programming_error")
+            return real(*args, **kwargs)
+    
+        monkeypatch.setattr(experiments, target, raise_programmer_error_after_baseline)
+        folder = tmp_path / "unexpected"
+>       with pytest.raises(error_type, match="FIX_injected_programming_error"):
+E       Failed: DID NOT RAISE NameError
+
+tests\test_review_fixes.py:62: Failed
+_______ test_unexpected_error_persisted_then_reraised[solve-TypeError] ________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p1-red-temp/test_unexpected_error_persiste1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001207A81D3A0>
+phase = 'solve', error_type = <class 'TypeError'>
+
+    @pytest.mark.parametrize("phase,error_type", [("solve", NameError), ("solve", TypeError),
+                                                 ("evaluate", ValueError)])
+    def test_unexpected_error_persisted_then_reraised(tmp_path, monkeypatch, phase, error_type):
+        target = "calibrate_hand_eye" if phase == "solve" else "pose_error"
+        real = getattr(experiments, target)
+        calls = 0
+    
+        def raise_programmer_error_after_baseline(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 5:  # 2 repeats × 2 methods 已通过无噪声关卡。
+                raise error_type("FIX_injected_programming_error")
+            return real(*args, **kwargs)
+    
+        monkeypatch.setattr(experiments, target, raise_programmer_error_after_baseline)
+        folder = tmp_path / "unexpected"
+>       with pytest.raises(error_type, match="FIX_injected_programming_error"):
+E       Failed: DID NOT RAISE TypeError
+
+tests\test_review_fixes.py:62: Failed
+_____ test_unexpected_error_persisted_then_reraised[evaluate-ValueError] ______
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p1-red-temp/test_unexpected_error_persiste2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001207F453170>
+phase = 'evaluate', error_type = <class 'ValueError'>
+
+    @pytest.mark.parametrize("phase,error_type", [("solve", NameError), ("solve", TypeError),
+                                                 ("evaluate", ValueError)])
+    def test_unexpected_error_persisted_then_reraised(tmp_path, monkeypatch, phase, error_type):
+        target = "calibrate_hand_eye" if phase == "solve" else "pose_error"
+        real = getattr(experiments, target)
+        calls = 0
+    
+        def raise_programmer_error_after_baseline(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 5:  # 2 repeats × 2 methods 已通过无噪声关卡。
+                raise error_type("FIX_injected_programming_error")
+            return real(*args, **kwargs)
+    
+        monkeypatch.setattr(experiments, target, raise_programmer_error_after_baseline)
+        folder = tmp_path / "unexpected"
+>       with pytest.raises(error_type, match="FIX_injected_programming_error"):
+E       Failed: DID NOT RAISE ValueError
+
+tests\test_review_fixes.py:62: Failed
+_____________ test_cli_unexpected_error_is_nonzero_with_traceback _____________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p1-red-temp/test_cli_unexpected_error_is_n0')
+
+    def test_cli_unexpected_error_is_nonzero_with_traceback(tmp_path):
+        root = Path(__file__).resolve().parents[1]
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps(asdict(config())), encoding="utf-8")
+        folder = tmp_path / "cli_failed"
+        # 独立进程中注入故障，不编辑CLI或真实求解模块。
+        bootstrap = """
+    import runpy, sys
+    import handeye.experiments as exp
+    real = exp.calibrate_hand_eye
+    calls = 0
+    def fail_after_baseline(*args, **kwargs):
+        global calls
+        calls += 1
+        if calls > 4:
+            raise NameError('FIX_cli_programmer_error')
+        return real(*args, **kwargs)
+    exp.calibrate_hand_eye = fail_after_baseline
+    sys.argv = ['run_m1.py', '--config', sys.argv[1], '--output', sys.argv[2]]
+    runpy.run_path('scripts/run_m1.py', run_name='__main__')
+    """
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(root / "src")
+        env["PYTHONIOENCODING"] = "utf-8"
+        result = subprocess.run([sys.executable, "-c", bootstrap, str(config_file), str(folder)],
+                                cwd=root, env=env, capture_output=True, text=True, encoding="utf-8")
+>       assert result.returncode != 0
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe', '-c', "\nimport runpy, sys\...out='{\n  "status": "complete",\n  "baseline_passed": true,\n  "trials": 16,\n  "solver_failures": 12\n}\n', stderr='').returncode
+
+tests\test_review_fixes.py:234: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[solve-NameError]
+FAILED tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[solve-TypeError]
+FAILED tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[evaluate-ValueError]
+FAILED tests/test_review_fixes.py::test_cli_unexpected_error_is_nonzero_with_traceback
+4 failed, 7 passed, 8 deselected in 9.46s

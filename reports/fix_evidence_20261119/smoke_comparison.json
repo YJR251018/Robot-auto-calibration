@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "matched_solve_results": 40,
+  "both_methods": [
+    "PARK",
+    "TSAI"
+  ],
+  "all_error_values_identical_to_original": true,
+  "all_logged_closures_recomputed_from_saved_ideal_prefix": true,
+  "changed_closure_rows": []
+}

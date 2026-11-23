@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "week": "2026-11-23/2026-11-29",
+  "timezone": "Asia/Shanghai",
+  "project_root": "D:\\Research\\Robot-auto-calibration",
+  "updated_date": "2026-11-23",
+  "current_scope": "planning_only",
+  "planning_complete": true,
+  "development_started": false,
+  "current_task": "W1",
+  "last_completed_checkpoint": "Plan files created; current M1 baseline verified: 143 tests passed",
+  "next_action": "On user execution request, read TONIGHT_M2_20261123.md and start stage A with a fresh Git/environment check",
+  "current_run_directory": null,
+  "baseline": {
+    "branch": "fix/m1-review-20261119",
+    "pytest_passed": 143,
+    "pytest_failed": 0,
+    "pytest_elapsed_seconds": 35.01,
+    "evidence": [
+      "reports/week_plan_evidence_20261123/baseline.txt",
+      "reports/week_plan_evidence_20261123/baseline.xml",
+      "reports/week_plan_evidence_20261123/planning_check.md"
+    ],
+    "note": "These are current planning checks; no W1-W7 development or formal experiment has been executed in this planning turn"
+  },
+  "tasks": [
+    {"id": "W1", "planned_date": "2026-11-23", "title": "M2 offline sampling and held-out evaluation", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W2", "planned_date": "2026-11-24", "title": "Projection and visibility", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W3", "planned_date": "2026-11-25", "title": "Pixel observations and PnP calibration loop", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W4", "planned_date": "2026-11-26", "title": "Budgeted sequential sampling", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W5", "planned_date": "2026-11-27", "title": "Robustness and ablations", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W6", "planned_date": "2026-11-28", "title": "Reproduction and review preparation", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+    {"id": "W7", "planned_date": "2026-11-29", "title": "Weekly delivery and learning materials", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []}
+  ],
+  "pending_decisions": [],
+  "notes": [
+    "Dates guide ordering; carry unfinished dependencies forward instead of skipping them",
+    "Verify evidence before marking a task done",
+    "Account quota is not visible; no promise to exhaust it or run after the active session ends",
+    "Preserve existing dirty Git state and other agents' work; no automatic commits or uploads"
+  ]
+}

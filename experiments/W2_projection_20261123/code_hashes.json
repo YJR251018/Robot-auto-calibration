@@ -1,0 +1,21 @@
+{
+  "src/handeye/__init__.py": "7a57b99104ee4f2b49f1eaa8278ed9e61dbee794bf4480102dd3f3f8ba9d9026",
+  "src/handeye/calibration.py": "d59777df5f31d41d02832da643f07366490022648d4924ebf69268ba4fd242ba",
+  "src/handeye/camera.py": "dd3c01ce0fc1ccf83826909bb4ab3e9ad6b0a705ee2f09fde659a73dd4f16d91",
+  "src/handeye/evaluation.py": "b645186ca314e9327f1e7963f73e6ec71b3cdb061bbda89b6637b233229a152a",
+  "src/handeye/experiments.py": "a5fe7227243059456cee24da57d30f4b1aef7dd03014fe3bfecf598279972500",
+  "src/handeye/m2_experiments.py": "113bdc95eb405bf8c765fa7859a4af3bb8986806ad2c2cba5112a4ac643d7ac9",
+  "src/handeye/m2_plotting.py": "9477e7ccb62d0d9daa31085ba6686fbb679b6ff579c6c2e80df5d5b9d5fc83a2",
+  "src/handeye/m2_verification.py": "34372bc873f6a9e002d8144d13a807bf0a7ecc4e98b9e828d44e0be21fda57fd",
+  "src/handeye/metrics.py": "210f7064a514fdd8844dba0534eded852b315ce39744338a8510bbe5d7eeb028",
+  "src/handeye/plotting.py": "9a1fb0dbb8327a3992a7ed0aad7b353aca8a307e81f70ea22e24e34c7f6f0db6",
+  "src/handeye/projection_experiment.py": "0d7e327971ff710be94358ae3b960ad92973afe4bc9e5aab9025f984baa9e75b",
+  "src/handeye/projection_verification.py": "936bad5ea76b5e6f44010124286e117727d3d96c86f867cd2ff07dea68c6579b",
+  "src/handeye/sampling.py": "252d8ee68704b3eabd65c86f4a99573a9df2424ea1520bbc37610a108e3976e2",
+  "src/handeye/simulation.py": "f0f4c78c24a648ff8c6f59d52597b632fcc6720f942636d8a0392b08f8a2c5ed",
+  "src/handeye/transforms.py": "b348277dfcc4306d1cadd5b0d6d1adc1997d5b79f4e01eae49d3082a25362e3b",
+  "scripts/run_m2.py": "5d863b0432365d81c74fc4d95aab328a42f9811abe7a6671eae1303d34730772",
+  "scripts/verify_m2.py": "599259d34e47b42c383186d9b7d13791c78b669d5857833b695231f99cccb260",
+  "scripts/run_projection.py": "0cd90a46711eaa421d1508a30ae5c49c8b1fde4f72af6f4453396e3ff3fda8d6",
+  "scripts/verify_projection.py": "437135418248a3dd3d2ea525bd1eff5946f82d76744bcfaa482cb3d4d211fa52"
+}

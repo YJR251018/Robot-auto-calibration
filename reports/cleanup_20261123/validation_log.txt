@@ -1,0 +1,76 @@
+{
+  "result": "PASS",
+  "existing_files_checked": 13528,
+  "changed_existing": [
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "docs/README.md",
+    "src/README.md"
+  ],
+  "moves_content_preserved": {
+    "INITIALIZATION.md": "docs/history/INITIALIZATION.md",
+    "CONTINUE WORK.md": "plans/archive/M1_TASK_20261118.md"
+  },
+  "no_existing_scientific_data_or_source_changes": true,
+  "experiment_hashes": [
+    {
+      "run": "M1_my_reproduction",
+      "hashed_files": 1271
+    },
+    {
+      "run": "M1_review_fix_smoke_20261119",
+      "hashed_files": 71
+    },
+    {
+      "run": "M1_review_quick",
+      "hashed_files": 101
+    },
+    {
+      "run": "M1_v0_1",
+      "hashed_files": 1271
+    },
+    {
+      "run": "M1_v0_1_reproduction",
+      "hashed_files": 1271
+    },
+    {
+      "run": "M2_pool120_20261123",
+      "hashed_files": 2208
+    },
+    {
+      "run": "M2_robot_noise_20261123",
+      "hashed_files": 2208
+    },
+    {
+      "run": "M2_sampling_20261123",
+      "hashed_files": 2208
+    },
+    {
+      "run": "M2_scene2_20261123",
+      "hashed_files": 2208
+    },
+    {
+      "run": "M2_smoke_20261123_a",
+      "hashed_files": 164
+    },
+    {
+      "run": "M2_smoke_20261123_b",
+      "hashed_files": 164
+    },
+    {
+      "run": "W2_projection_20261123",
+      "hashed_files": 74
+    }
+  ],
+  "pytest": {
+    "tests": 226,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "publish_candidate_files": 13533,
+  "secret_or_pii_findings": [],
+  "navigation_links_checked": 52,
+  "note": "Original proposal/PDFs/private extracted text and environment excluded; historical manifests retained as old snapshots"
+}

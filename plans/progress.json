@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "week": "2026-11-23/2026-11-29",
+  "timezone": "Asia/Shanghai",
+  "project_root": "D:\\Research\\Robot-auto-calibration",
+  "updated_date": "2026-11-23",
+  "current_scope": "M2_and_W2_complete",
+  "planning_complete": true,
+  "development_started": true,
+  "current_task": "W3",
+  "last_completed_checkpoint": "M2 A-G, H1-H3, H4/W2 accepted; 226 tests; 8700 formal solves and replays passed",
+  "next_action": "Read W3 runbook, freeze pixel/PnP protocol, implement and validate noiseless PnP chain before noise",
+  "current_run_directory": null,
+  "baseline": {
+    "branch": "fix/m1-review-20261119",
+    "pytest_passed": 143,
+    "pytest_failed": 0,
+    "pytest_elapsed_seconds": 35.01,
+    "evidence": [
+      "reports/week_plan_evidence_20261123/baseline.txt",
+      "reports/week_plan_evidence_20261123/baseline.xml",
+      "reports/week_plan_evidence_20261123/planning_check.md"
+    ],
+    "note": "These are current planning checks; no W1-W7 development or formal experiment has been executed in this planning turn"
+  },
+  "tasks": [
+    {
+      "id": "W1",
+      "planned_date": "2026-11-23",
+      "title": "M2 offline sampling and held-out evaluation",
+      "status": "done",
+      "last_stage": "G",
+      "evidence": [
+        "reports/M2_evidence_20261123/baseline.txt",
+        "reports/M2_evidence_20261123/math_green.txt",
+        "docs/PROJECT_SPEC.md",
+        "reports/M2_review_followup_20261123.md",
+        "reports/M2_evidence_20261123/integration_green.txt",
+        "reports/M2_evidence_20261123/smoke_verification.json",
+        "reports/M2_development_report_20261123.md",
+        "reports/M2_evidence_20261123/formal_verification.json",
+        "reports/M2_evidence_20261123/full_core.txt"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "W2",
+      "planned_date": "2026-11-24",
+      "title": "Projection and visibility",
+      "status": "done",
+      "last_stage": "accepted",
+      "evidence": [
+        "reports/W2_protocol_20261123.md",
+        "reports/W2_evidence_20261123/integration.txt",
+        "reports/W2_development_report_20261123.md",
+        "reports/W2_evidence_20261123/formal_verification.json",
+        "reports/W2_evidence_20261123/independent_numeric_audit.json",
+        "reports/W2_evidence_20261123/full_final.txt"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "W3",
+      "planned_date": "2026-11-25",
+      "title": "Pixel observations and PnP calibration loop",
+      "status": "not_started",
+      "last_stage": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "W4",
+      "planned_date": "2026-11-26",
+      "title": "Budgeted sequential sampling",
+      "status": "not_started",
+      "last_stage": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "W5",
+      "planned_date": "2026-11-27",
+      "title": "Robustness and ablations",
+      "status": "not_started",
+      "last_stage": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "W6",
+      "planned_date": "2026-11-28",
+      "title": "Reproduction and review preparation",
+      "status": "not_started",
+      "last_stage": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "W7",
+      "planned_date": "2026-11-29",
+      "title": "Weekly delivery and learning materials",
+      "status": "not_started",
+      "last_stage": null,
+      "evidence": [],
+      "blockers": []
+    }
+  ],
+  "pending_decisions": [],
+  "notes": [
+    "Dates guide ordering; carry unfinished dependencies forward instead of skipping them",
+    "Verify evidence before marking a task done",
+    "Account quota is not visible; no promise to exhaust it or run after the active session ends",
+    "Preserve existing dirty Git state and other agents' work; no automatic commits or uploads"
+  ],
+  "extension_tasks": [
+    {
+      "id": "M2_H1",
+      "status": "done",
+      "evidence": "reports/M2_evidence_20261123/robot_noise_verification.json"
+    },
+    {
+      "id": "M2_H2",
+      "status": "done",
+      "evidence": "reports/M2_evidence_20261123/scene2_verification.json"
+    },
+    {
+      "id": "M2_H3",
+      "status": "done",
+      "evidence": "reports/M2_evidence_20261123/pool120_verification.json"
+    },
+    {
+      "id": "M2_H4",
+      "status": "done",
+      "evidence": "reports/W2_development_report_20261123.md"
+    }
+  ],
+  "latest_validation": {
+    "pytest_passed": 226,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 17.11,
+    "formal_m2_solves": 8640,
+    "formal_W2_solves": 60,
+    "formal_unrun": 0,
+    "note": "Settings/replays not pooled as independent replicates"
+  }
+}

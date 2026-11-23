@@ -1,0 +1,15 @@
+{
+  "scope": "M2_sampling_20261123 PNGs",
+  "inspected": [
+    "error_vs_samples.png",
+    "paired_difference.png",
+    "failure_rate.png"
+  ],
+  "result": "readable",
+  "notes": [
+    "Mean +/- sample SD labelled; not a confidence interval",
+    "Paired positive and negative differences preserved",
+    "Zero failures explicitly shown as 0/30",
+    "PDF exported by same Matplotlib figure; no journal certification"
+  ]
+}

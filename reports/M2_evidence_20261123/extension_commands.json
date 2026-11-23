@@ -1,0 +1,80 @@
+[
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/run_m2.py",
+      "--config",
+      "configs/m2_robot_noise_v0_1.json",
+      "--output",
+      "experiments/M2_robot_noise_20261123"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/verify_m2.py",
+      "--run",
+      "experiments/M2_robot_noise_20261123",
+      "--report",
+      "reports/M2_evidence_20261123/robot_noise_verification.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/run_m2.py",
+      "--config",
+      "configs/m2_scene2_v0_1.json",
+      "--output",
+      "experiments/M2_scene2_20261123"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/verify_m2.py",
+      "--run",
+      "experiments/M2_scene2_20261123",
+      "--report",
+      "reports/M2_evidence_20261123/scene2_verification.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/run_m2.py",
+      "--config",
+      "configs/m2_pool120_v0_1.json",
+      "--output",
+      "experiments/M2_pool120_20261123"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+      "-W",
+      "error",
+      "scripts/verify_m2.py",
+      "--run",
+      "experiments/M2_pool120_20261123",
+      "--report",
+      "reports/M2_evidence_20261123/pool120_verification.json"
+    ],
+    "exit_code": 0
+  }
+]

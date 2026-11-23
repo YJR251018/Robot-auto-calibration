@@ -1,0 +1,198 @@
+[
+  {
+    "path": ".gitignore",
+    "sha256": "d88287632841544e4e70520c33a87da0e21ac191075eb02e8b9e4b33cf9533ee"
+  },
+  {
+    "path": "AGENTS.md",
+    "sha256": "8746b5548f32ba66173b84abbd5ed55b1de821820c733398fdf5266eda66331d"
+  },
+  {
+    "path": "CONTINUE WORK.md",
+    "sha256": "02125c76080bc4cc61377d22172cc6cb9177698ee84a42075215c0a0a1c16b96"
+  },
+  {
+    "path": "INITIALIZATION.md",
+    "sha256": "9e5b0ad8bc753b073e4101b8746d4be984fc656630bf2a431a0920e54b4560c0"
+  },
+  {
+    "path": "pytest.ini",
+    "sha256": "881ca64cdd6e0b0506824123f6a40f760705a7deb77df4c455253dfab25ccb71"
+  },
+  {
+    "path": "README.md",
+    "sha256": "0d679b9d1a098b8f760bd0466da580f276d17faf5101c6e69ee9c87972bd6613"
+  },
+  {
+    "path": "requirements-lock.txt",
+    "sha256": "f03886c24ed106a47ddc88aa24abc19cff01733b0e10ba4c7510882d9f5d622c"
+  },
+  {
+    "path": "requirements.txt",
+    "sha256": "0ca50657a8adb58c08301af1bfbc1bf6a7191565c11bb16e0450faeec54c1450"
+  },
+  {
+    "path": "基于视觉的机器人手眼自动标定方法研究_广东工业大学创新训练项目申报书.docx",
+    "sha256": "3c4facadd67cb6bb1e6aa037baaff20aae9267ba3cf9dda12e3d71285099dfb0"
+  },
+  {
+    "path": "docs/eye_in_hand_frames.md",
+    "sha256": "49c08086becf2f8db42ff9eaba922052af4ff54944c32418e4e027424cf3c70d"
+  },
+  {
+    "path": "docs/handeye_basics.md",
+    "sha256": "187e107ff8301a92f29563639363779f2d544fba43dad288b4f2130ea93f4a42"
+  },
+  {
+    "path": "docs/literature_review.md",
+    "sha256": "1c34ba0c9524599218ec9cecba7586b0ff616ad3f2616e9ebc1e9725332096ba"
+  },
+  {
+    "path": "docs/literature_search_log.md",
+    "sha256": "19be26d67643f270d3b7332d72ce2045c5b4f59e76acaaf9487f622d0609c7e5"
+  },
+  {
+    "path": "docs/project_context.md",
+    "sha256": "0b0050cd1e7e028df08e25c18042ba84345df2bee34805dab48845effb7d6b3a"
+  },
+  {
+    "path": "docs/README.md",
+    "sha256": "ab2e20b6ee5a43e36aa5271038f338bba76b75f933e121b47e2fd9c2fb0e9506"
+  },
+  {
+    "path": "docs/research_questions.md",
+    "sha256": "32077ccb99506d1e8414aa4af2a80bcfc88d109111846532c7b7992ad6a94879"
+  },
+  {
+    "path": "docs/simulation_plan.md",
+    "sha256": "1ef74603b01a2cbe5acb2bb67561af6ff56f0a855e1e8ee5cc6736a9c1f3bf8c"
+  },
+  {
+    "path": "docs/technical_roadmap.md",
+    "sha256": "219d57e3dcf877a0c67834132e2b7b8fe00458bdfcdc61a65c918527a94bc4bb"
+  },
+  {
+    "path": "docs/transforms_usage.md",
+    "sha256": "a4625509eea3a7652903fd0f72d9eeadb96c5939abaed40e5ae8d9b26dac94db"
+  },
+  {
+    "path": "examples/basic_transforms.py",
+    "sha256": "8ff517657a3ff4fce26d0fc8f0861151b65a76073cbe561cba484448012f9b3f"
+  },
+  {
+    "path": "reports/dependency_check.txt",
+    "sha256": "672aec65a45bed50e70229c70934a7eebf0462595c459b83023027645d57cccf"
+  },
+  {
+    "path": "reports/example_output.txt",
+    "sha256": "bd1fdafc5b87582125b531d54ce5283529eee0fe019f00c37e29a4d30996519e"
+  },
+  {
+    "path": "reports/file_inventory.json",
+    "sha256": "79fb06da04c9d6245184418061c1f45b9f30215fc14f131b73c290f97431fc3b"
+  },
+  {
+    "path": "reports/git_diff_check.txt",
+    "sha256": "d04e7fbab1db45adeacc9f243c858a9d02bd0016459b53b678a67b7baa91711f"
+  },
+  {
+    "path": "reports/git_status_final.txt",
+    "sha256": "fa2965a75e29ce75840e2f9db5d71eafced93e18dbe2dc57621d7e984698aa67"
+  },
+  {
+    "path": "reports/link_audit.json",
+    "sha256": "3368ebfc76e593b1b0f6a20f8c4a84297d5913ccb0cb0fcf9fdb92cf10650a6b"
+  },
+  {
+    "path": "reports/opencv_handeye_api.txt",
+    "sha256": "d72f0aede8d4e97c95ef3216b0e0d65f288d3171e2e5b92a29b6a3d6e69a19fb"
+  },
+  {
+    "path": "reports/proposal_text_local.txt",
+    "sha256": "8334373a2536fe7bc002ff15f434dfb59163380c40efdba44d7aa8e2a9642e2b"
+  },
+  {
+    "path": "reports/pytest-results.xml",
+    "sha256": "a98e3e7b9d2481a5ed92f82b290f6d71952841b980f25774176f2968512967fb"
+  },
+  {
+    "path": "reports/test_results.txt",
+    "sha256": "f2179a081263e97252277990664638d9a7873b870a014b4b5ae73d6ea6578da6"
+  },
+  {
+    "path": "reports/tonight_report.md",
+    "sha256": "3430a6b67b084211461dd7c057891e0264532cec6d3c57cf5b6bfeda623da731"
+  },
+  {
+    "path": "reports/verification_results.json",
+    "sha256": "4a12448db9880a6288bbf09bd6d114fe7e0383c926cdd14ea942d66ac5041c44"
+  },
+  {
+    "path": "research_output/literature_report.md",
+    "sha256": "b1a611eb0edb7ddba8405a057c20ef13f138e64eae001db9de80d00aa6b3d5b9"
+  },
+  {
+    "path": "src/README.md",
+    "sha256": "b71bc87e0df56e8a1f54232c2f20c428c930e6a3247cccdfb318043819a3aad4"
+  },
+  {
+    "path": "tests/test_environment.py",
+    "sha256": "fbc02e54713226b0c1a529ebe93d552b51bbc66176fdd7ea1730d4c35e9c4ba8"
+  },
+  {
+    "path": "tests/test_transforms.py",
+    "sha256": "ccc5657f9ba207c0eed2467a497f9d1ccc1c03a9beffcdf2f06acb001ad3ef1d"
+  },
+  {
+    "path": "文献/一种结合手眼标定与TCP标定的标定方法_袁彬.pdf",
+    "sha256": "798b461baa4614d5801aa949040eb2217afe916c28b9aa6e698f83622eaf4b8b"
+  },
+  {
+    "path": "文献/基于上位机的工业机器人磨头工具坐标系自动标定技术研究_梁忠伟.pdf",
+    "sha256": "532525b04a23ebe0c42beb10809ad1ad9eddd9673df6653f0b5fe72308589ffd"
+  },
+  {
+    "path": "文献/基于机器视觉的工业机器人手眼标定方法研究.pdf",
+    "sha256": "af2428c1935b0c5304446edce2555848bac18c6237c84167798a0728a339f1b2"
+  },
+  {
+    "path": "文献/基于视觉检测的六自由度工业机器人自动标定系统研究_张夫奕.pdf",
+    "sha256": "b90f371a2aad2443b1e9c96d7f05b865f65df041cd31776b003a1c218eaee06d"
+  },
+  {
+    "path": "文献/工业机器人智能化手眼标定系统研究_苏萌.pdf",
+    "sha256": "46decce732fa8f647a97e59d7948745e12a22d6de558351a32384e9ce40d414a"
+  },
+  {
+    "path": "文献/工业机器人末端执行器自动标定系统研究_姜丽晨.pdf",
+    "sha256": "e3ec70bf743f923354972bbae8652ecee3a3850a2ff43812fce8b513c951016d"
+  },
+  {
+    "path": "文献/打磨机器人工具工件高精度自动标定系统开发_冯东远.pdf",
+    "sha256": "86335ba1646adce64c49961e87e27e368f045736809f603d39f43585a4966aae"
+  },
+  {
+    "path": "reports/baseline_2026-11-18/AGENTS.md",
+    "sha256": "6644d75fb62f1b39a0fc67488e447042b2ff1378721233151d63fcc8d09a10aa"
+  },
+  {
+    "path": "reports/baseline_2026-11-18/manifest.json",
+    "sha256": "1323443953ce59701aaf0357dca187f459194bb103e1966fe3f10acd0459aee5"
+  },
+  {
+    "path": "reports/baseline_2026-11-18/README.md",
+    "sha256": "b45f045782abca055dab171204dcf2ea414f0375fd247be40743e2157e776c0c"
+  },
+  {
+    "path": "reports/baseline_2026-11-18/src/README.md",
+    "sha256": "6df6f65390c35ef3bc5b9022065dd8c1834f5c3bf7b5532f13aa167ba1660345"
+  },
+  {
+    "path": "src/handeye/transforms.py",
+    "sha256": "b348277dfcc4306d1cadd5b0d6d1adc1997d5b79f4e01eae49d3082a25362e3b"
+  },
+  {
+    "path": "src/handeye/__init__.py",
+    "sha256": "7a57b99104ee4f2b49f1eaa8278ed9e61dbee794bf4480102dd3f3f8ba9d9026"
+  }
+]

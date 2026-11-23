@@ -1,0 +1,47 @@
+{
+  "seed": 71,
+  "gripper": {
+    "pair_count": 105,
+    "rotation_axis_singular_values": [
+      6.47997086391226,
+      5.927067588481975,
+      5.280137063032996
+    ],
+    "translation_design_singular_values": [
+      10.127522448804974,
+      9.408040392887376,
+      9.11110412981026
+    ],
+    "axis_second_first_ratio": 0.9146750368108182,
+    "translation_min_max_ratio": 0.8996380087891437,
+    "nondegenerate": true
+  },
+  "target": {
+    "pair_count": 105,
+    "rotation_axis_singular_values": [
+      6.441759364166399,
+      5.966729412239864,
+      5.282222677555944
+    ],
+    "translation_design_singular_values": [
+      10.127522448804978,
+      9.408040392887377,
+      9.111104129810261
+    ],
+    "axis_second_first_ratio": 0.926257730990545,
+    "translation_min_max_ratio": 0.8996380087891436,
+    "nondegenerate": true
+  },
+  "numpy_empty_shape": [
+    0,
+    3
+  ],
+  "environment": {
+    "python": "3.12.0",
+    "numpy": "2.5.5",
+    "scipy": "1.18.1",
+    "opencv": "5.1.0",
+    "matplotlib": "3.11.2",
+    "pytest": "9.2.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "comparison": "rotation_farthest - random; N=20, mixed, PARK, heldout point RMSE",
+  "eligible_repeats": 2,
+  "paired_success": 2,
+  "pairs": [
+    {
+      "repeat": 0,
+      "delta_mm": 0.07412290412216993
+    },
+    {
+      "repeat": 1,
+      "delta_mm": -0.8021073739010259
+    }
+  ],
+  "mean_delta_mm": -0.363992234889428,
+  "ci95_mm": [
+    -0.8021073739010259,
+    0.07412290412216993
+  ],
+  "bootstrap_seed": 360000,
+  "bootstrap_repeats": 2000
+}

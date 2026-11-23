@@ -1,0 +1,84 @@
+{
+  "repeats": 30,
+  "candidate_count": 60,
+  "holdout_count": 20,
+  "sample_counts": [
+    8,
+    12,
+    20
+  ],
+  "initial_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "strategies": [
+    "ordered",
+    "random",
+    "rotation_farthest"
+  ],
+  "methods": [
+    "PARK",
+    "TSAI"
+  ],
+  "candidate_seed": 310000,
+  "holdout_seed": 320000,
+  "noise_seed": 330000,
+  "selection_seed": 340000,
+  "robot_noise_seed": 350000,
+  "bootstrap_seed": 360000,
+  "bootstrap_repeats": 2000,
+  "conditions": [
+    {
+      "name": "baseline",
+      "rotation_deg": 0.0,
+      "translation_mm": 0.0,
+      "robot_rotation_deg": 0.0,
+      "robot_translation_mm": 0.0
+    },
+    {
+      "name": "rotation",
+      "rotation_deg": 0.3,
+      "translation_mm": 0.0,
+      "robot_rotation_deg": 0.0,
+      "robot_translation_mm": 0.0
+    },
+    {
+      "name": "translation",
+      "rotation_deg": 0,
+      "translation_mm": 0.5,
+      "robot_rotation_deg": 0.0,
+      "robot_translation_mm": 0.0
+    },
+    {
+      "name": "mixed",
+      "rotation_deg": 0.3,
+      "translation_mm": 0.5,
+      "robot_rotation_deg": 0.0,
+      "robot_translation_mm": 0.0
+    }
+  ],
+  "scene": {
+    "handeye_rotvec_rad": [
+      0.2,
+      -0.15,
+      0.3
+    ],
+    "handeye_translation_m": [
+      0.05,
+      0.02,
+      0.1
+    ],
+    "target_rotvec_rad": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_translation_m": [
+      0.6,
+      0.0,
+      0.3
+    ]
+  }
+}

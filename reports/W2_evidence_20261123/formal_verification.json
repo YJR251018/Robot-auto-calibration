@@ -1,0 +1,8 @@
+{
+  "result": "PASS",
+  "candidates": 3600,
+  "regenerated_repeats": 30,
+  "replayed_baseline_solves": 60,
+  "prediction_evaluations": 3000,
+  "note": "重放不增加独立实验单位；可见性预测只验证理想训练场景"
+}

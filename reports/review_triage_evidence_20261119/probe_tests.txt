@@ -1,0 +1,14 @@
+test_01_no_empty_reshape_crash (__main__.ReviewChecks.test_01_no_empty_reshape_crash) ... ok
+test_02_unexpected_nameerror_swallowed_after_baseline (__main__.ReviewChecks.test_02_unexpected_nameerror_swallowed_after_baseline) ... ok
+test_03_target_diagnostics_invariance_to_handeye_truth (__main__.ReviewChecks.test_03_target_diagnostics_invariance_to_handeye_truth) ... ok
+test_04_closure_prefix_actual_artifacts (__main__.ReviewChecks.test_04_closure_prefix_actual_artifacts) ... ok
+test_05_missing_experiment_plot_csv (__main__.ReviewChecks.test_05_missing_experiment_plot_csv) ... ok
+test_07_reflection_solver_output_already_rejected (__main__.ReviewChecks.test_07_reflection_solver_output_already_rejected) ... ok
+test_08_runtimeerror_cli_not_hidden (__main__.ReviewChecks.test_08_runtimeerror_cli_not_hidden) ... ok
+test_09_math_and_opencv_direction (__main__.ReviewChecks.test_09_math_and_opencv_direction) ... ok
+test_10_rotation_error_against_trace_for_well_conditioned_angle (__main__.ReviewChecks.test_10_rotation_error_against_trace_for_well_conditioned_angle) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.549s
+
+OK

@@ -1,0 +1,1154 @@
+[
+  {
+    "trial_id": "baseline_000_ordered_8_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_ordered_8_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_ordered_12_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_ordered_12_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_ordered_20_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_ordered_20_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_random_8_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_random_8_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_random_12_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_random_12_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_random_20_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_random_20_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_8_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_8_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_12_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_12_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_20_PARK",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_000_rotation_farthest_20_TSAI",
+    "condition": "baseline",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_ordered_8_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_ordered_8_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_ordered_12_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_ordered_12_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_ordered_20_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_ordered_20_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_random_8_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_random_8_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_random_12_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_random_12_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_random_20_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_random_20_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_8_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_8_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_12_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_12_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_20_PARK",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "baseline_001_rotation_farthest_20_TSAI",
+    "condition": "baseline",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_ordered_8_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_ordered_8_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_ordered_12_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_ordered_12_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_ordered_20_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_ordered_20_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_random_8_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_random_8_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_random_12_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_random_12_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_random_20_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_random_20_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_8_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_8_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_12_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_12_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_20_PARK",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_000_rotation_farthest_20_TSAI",
+    "condition": "rotation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_ordered_8_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_ordered_8_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_ordered_12_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_ordered_12_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_ordered_20_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_ordered_20_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_random_8_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_random_8_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_random_12_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_random_12_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_random_20_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_random_20_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_8_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_8_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_12_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_12_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_20_PARK",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "rotation_001_rotation_farthest_20_TSAI",
+    "condition": "rotation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_ordered_8_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_ordered_8_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_ordered_12_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_ordered_12_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_ordered_20_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_ordered_20_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_random_8_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_random_8_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_random_12_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_random_12_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_random_20_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_random_20_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_8_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_8_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_12_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_12_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_20_PARK",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_000_rotation_farthest_20_TSAI",
+    "condition": "translation",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_ordered_8_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_ordered_8_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_ordered_12_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_ordered_12_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_ordered_20_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_ordered_20_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_random_8_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_random_8_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_random_12_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_random_12_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_random_20_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_random_20_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_8_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_8_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_12_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_12_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_20_PARK",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "translation_001_rotation_farthest_20_TSAI",
+    "condition": "translation",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_ordered_8_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_ordered_8_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_ordered_12_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_ordered_12_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_ordered_20_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_ordered_20_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_random_8_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_random_8_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_random_12_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_random_12_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_random_20_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_random_20_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_8_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_8_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_12_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_12_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_20_PARK",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_000_rotation_farthest_20_TSAI",
+    "condition": "mixed",
+    "repeat": 0,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_ordered_8_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_ordered_8_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_ordered_12_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_ordered_12_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_ordered_20_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_ordered_20_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "ordered",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_random_8_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_random_8_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_random_12_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_random_12_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_random_20_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_random_20_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "random",
+    "n_samples": 20,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_8_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_8_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 8,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_12_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_12_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 12,
+    "method": "TSAI"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_20_PARK",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "PARK"
+  },
+  {
+    "trial_id": "mixed_001_rotation_farthest_20_TSAI",
+    "condition": "mixed",
+    "repeat": 1,
+    "strategy": "rotation_farthest",
+    "n_samples": 20,
+    "method": "TSAI"
+  }
+]

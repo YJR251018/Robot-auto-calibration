@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "identical_tables": [
+    "trials.csv",
+    "summary.csv",
+    "config.json",
+    "summary.json",
+    "baseline_gate.json"
+  ],
+  "identical_raw_datasets": 420,
+  "replayed_successful_solves": 840,
+  "audited_summary_rows": 28,
+  "note": "重跑与重放用于复算验证，未增加独立统计样本数"
+}

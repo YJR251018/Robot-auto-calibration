@@ -1,0 +1,2570 @@
+--- /dev/null
++++ after/src/handeye/camera.py
+@@ -0,0 +1,127 @@
++"""零畸变针孔投影与可见性；米→pixel，光学系 x右/y下/z前。"""
++from dataclasses import dataclass
++from numbers import Integral, Real
++
++import numpy as np
++
++from .calibration import pose_stack
++from .transforms import invert_transform, make_transform, validate_transform
++
++
++def _finite_real(value, name, *, positive=False):
++    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real) or not np.isfinite(value):
++        raise ValueError(f'{name} 必须为有限实数')
++    if positive and value <= 0:
++        raise ValueError(f'{name} 必须为正数')
++    return float(value)
++
++
++@dataclass(frozen=True)
++class Camera:
++    width: int = 1280
++    height: int = 960
++    fx: float = 900.0
++    fy: float = 900.0
++    cx: float = 640.0
++    cy: float = 480.0
++    margin: float = 16.0
++    depth_epsilon: float = 1e-6
++
++    def validate(self):
++        for name in ('width', 'height'):
++            value = getattr(self, name)
++            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral) or value < 2:
++                raise ValueError(f'{name} 必须为至少2的整数')
++        for name in ('fx', 'fy', 'depth_epsilon'):
++            _finite_real(getattr(self, name), name, positive=True)
++        for name in ('cx', 'cy', 'margin'):
++            _finite_real(getattr(self, name), name)
++        if not 0 <= self.margin < min(self.width-1, self.height-1)/2:
++            raise ValueError('margin 必须非负且保留非空画面')
++
++    def matrix(self):
++        self.validate()
++        return np.array([[self.fx, 0., self.cx], [0., self.fy, self.cy], [0., 0., 1.]])
++
++
++def board_grid():
++    """T系 9×7 点，行优先，间距0.025m；几何矩形无厚度/遮挡。"""
++    x, y = np.meshgrid(np.arange(-4, 5)*.025, np.arange(-3, 4)*.025)
++    return np.column_stack((x.ravel(), y.ravel(), np.zeros(x.size)))
++
++
++def _camera_points(points, t_c_t, camera):
++    if not isinstance(camera, Camera):
++        raise ValueError('camera 必须是 Camera')
++    camera.validate()
++    q = validate_transform(t_c_t)
++    p = np.asarray(points)
++    if p.ndim != 2 or p.shape[1] != 3 or not len(p) or p.dtype.kind not in 'iuf' or not np.all(np.isfinite(p)):
++        raise ValueError('points 须为非空有限实数 (K,3)，单位米')
++    with np.errstate(over='ignore', invalid='ignore'):
++        result = p.astype(float) @ q[:3, :3].T + q[:3, 3]
++    if not np.all(np.isfinite(result)):
++        raise ValueError('变换后点坐标非有限')
++    return result
++
++
++def _pixels(p, camera):
++    with np.errstate(over='ignore', invalid='ignore'):
++        pixels = p[:, :2]/p[:, 2, None]*[camera.fx, camera.fy] + [camera.cx, camera.cy]
++    if not np.all(np.isfinite(pixels)):
++        raise ValueError('投影像素非有限')
++    return pixels
++
++
++def project_points(points, t_c_t, camera):
++    """T系点经 T_C_T 投影；所有深度须 >depth_epsilon，否则显式拒收。"""
++    p = _camera_points(points, t_c_t, camera)
++    if np.any(p[:, 2] <= camera.depth_epsilon):
++        raise ValueError('点深度必须大于 depth_epsilon')
++    return _pixels(p, camera), p[:, 2].copy()
++
++
++@dataclass(frozen=True)
++class Visibility:
++    visible: bool
++    reason: str
++    pixels: np.ndarray | None
++    depths_m: np.ndarray
++
++
++def measure_visibility(t_c_t, camera, *, points=None):
++    """测量端使用实际Q；先深度、再画面、再余量，边界包含像素中心。"""
++    p = _camera_points(board_grid() if points is None else points, t_c_t, camera)
++    depths = p[:, 2].copy()
++    if np.any(depths <= camera.depth_epsilon):
++        return Visibility(False, 'depth', None, depths)
++    pixels = _pixels(p, camera)
++    upper = np.array([camera.width-1, camera.height-1])
++    if np.any(pixels < 0) or np.any(pixels > upper):
++        return Visibility(False, 'outside_image', pixels, depths)
++    if np.any(pixels < camera.margin) or np.any(pixels > upper-camera.margin):
++        return Visibility(False, 'margin', pixels, depths)
++    return Visibility(True, 'visible', pixels, depths)
++
++
++def predict_visibility(t_b_g, t_g_c_est, t_b_t_est, camera, *, points=None):
++    """规划端只使用候选G与已有估计；不接收真实Q或真值容器。"""
++    g, x, y = (validate_transform(t) for t in (t_b_g, t_g_c_est, t_b_t_est))
++    predicted_q = invert_transform(g @ x) @ y
++    return measure_visibility(predicted_q, camera, points=points)
++
++
++def estimate_target_in_base(t_b_g, t_c_t, t_g_c_est):
++    """由已采训练观测的 G X_hat Q 均值估计Y；平移均值+旋转SVD投影。
++
++    仅对训练观测调用，不接收固定板真值。旋转均值不唯一/病态时拒绝。
++    """
++    g, q = pose_stack(t_b_g), pose_stack(t_c_t)
++    if len(g) != len(q):
++        raise ValueError('训练G/Q数量必须相等')
++    x = validate_transform(t_g_c_est)
++    poses = g @ x @ q
++    u, s, vt = np.linalg.svd(poses[:, :3, :3].mean(axis=0))
++    if s[-1] <= 1e-12 or np.linalg.det(u @ vt) <= 0:
++        raise ValueError('训练观测的旋转均值病态或不唯一')
++    return make_transform(u @ vt, poses[:, :3, 3].mean(axis=0))
+--- /dev/null
++++ after/src/handeye/evaluation.py
+@@ -0,0 +1,41 @@
++"""独立留出评价。真值仅在本模块用于事后评价，不参与采样或求解。"""
++import numpy as np
++from scipy.spatial.transform import Rotation
++
++from .calibration import pose_stack
++from .transforms import validate_transform
++
++
++def board_reference_points():
++    """T 系虚拟板的四角和中心，单位米；不意味着相机可见。"""
++    return np.array([[-.10, -.075, 0], [-.10, .075, 0], [.10, -.075, 0],
++                     [.10, .075, 0], [0, 0, 0]])
++
++
++def heldout_metrics(t_g_c, t_b_g, t_c_t, t_b_t, *, points=None):
++    """用独立的理想 G/Q 评价 X_hat；返回米/弧度指标及逐帧点 RMSE。
++
++    point_rmse_m 对所有留出帧和点的平方距离求均值再开方；
++    同一估计下的帧和点不是独立统计重复。不修改任何输入。
++    """
++    x, y = validate_transform(t_g_c), validate_transform(t_b_t)
++    g, q = pose_stack(t_b_g, minimum=1), pose_stack(t_c_t, minimum=1)
++    if len(g) != len(q):
++        raise ValueError('留出 G/Q 必须一一配对')
++    p = np.asarray(board_reference_points() if points is None else points)
++    if p.ndim != 2 or p.shape[1] != 3 or len(p) == 0 or p.dtype.kind not in 'iuf' or not np.all(np.isfinite(p)):
++        raise ValueError('points 必须为非空有限实数 (K,3) 点集，单位米')
++    p = p.astype(float)
++    closure = g @ x @ q
++    predicted = np.einsum('hij,kj->hki', closure[:, :3, :3], p) + closure[:, None, :3, 3]
++    reference = p @ y[:3, :3].T + y[:3, 3]
++    distances = np.linalg.norm(predicted-reference, axis=-1)
++    angles = Rotation.from_matrix(closure[:, :3, :3] @ y[:3, :3].T).magnitude()
++    translations = np.linalg.norm(closure[:, :3, 3]-y[:3, 3], axis=1)
++    return {
++        'point_rmse_m': float(np.sqrt(np.mean(distances**2))),
++        'point_max_m': float(np.max(distances)),
++        'frame_point_rmse_m': np.sqrt(np.mean(distances**2, axis=1)).tolist(),
++        'closure_rotation_rmse_rad': float(np.sqrt(np.mean(angles**2))),
++        'closure_translation_rmse_m': float(np.sqrt(np.mean(translations**2))),
++    }
+--- /dev/null
++++ after/src/handeye/m2_experiments.py
+@@ -0,0 +1,349 @@
++"""M2 冻结协议：共享候选/噪声、独立留出、先基线后噪声、逐次落盘。"""
++from dataclasses import asdict, dataclass, field
++import csv
++import hashlib
++import json
++from pathlib import Path
++import platform
++import time
++import traceback
++
++import cv2
++import numpy as np
++import scipy
++from scipy.spatial.transform import Rotation
++
++from .calibration import CalibrationError, METHODS, calibrate_hand_eye, pose_stack
++from .evaluation import board_reference_points, heldout_metrics
++from .metrics import pose_error
++from .sampling import STRATEGIES, select_poses
++from .simulation import SceneConfig, generate_dataset, nonnegative_integer, nonnegative_real
++
++ROOT = Path(__file__).resolve().parents[2]
++METRICS = ('rotation_error_deg', 'translation_error_mm', 'point_rmse_mm', 'point_max_mm',
++           'closure_rotation_rmse_deg', 'closure_translation_rmse_mm')
++
++
++def write_json(path, value):
++    Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding='utf-8')
++
++
++def digest(path):
++    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
++
++
++def code_hashes():
++    paths = sorted((ROOT/'src/handeye').glob('*.py')) + sorted((ROOT/'scripts').glob('*m2*.py'))
++    return {p.relative_to(ROOT).as_posix(): digest(p) for p in paths}
++
++
++@dataclass(frozen=True)
++class Noise:
++    name: str
++    rotation_deg: float = 0.0
++    translation_mm: float = 0.0
++    robot_rotation_deg: float = 0.0
++    robot_translation_mm: float = 0.0
++
++
++@dataclass(frozen=True)
++class M2Config:
++    repeats: int = 30
++    candidate_count: int = 60
++    holdout_count: int = 20
++    sample_counts: tuple = (8, 12, 20)
++    initial_ids: tuple = (0, 1, 2, 3)
++    strategies: tuple = STRATEGIES
++    methods: tuple = ('PARK', 'TSAI')
++    candidate_seed: int = 310000
++    holdout_seed: int = 320000
++    noise_seed: int = 330000
++    selection_seed: int = 340000
++    robot_noise_seed: int = 350000
++    bootstrap_seed: int = 360000
++    bootstrap_repeats: int = 2000
++    conditions: tuple = field(default_factory=lambda: (Noise('baseline'), Noise('rotation', .3),
++                                 Noise('translation', 0, .5), Noise('mixed', .3, .5)))
++    scene: SceneConfig = field(default_factory=SceneConfig)
++
++    @classmethod
++    def from_dict(cls, values):
++        values = dict(values)
++        if 'scene' in values:
++            values['scene'] = SceneConfig(**values['scene'])
++        if 'conditions' in values:
++            values['conditions'] = tuple(Noise(**x) for x in values['conditions'])
++        config = cls(**values)
++        config.validate()
++        return config
++
++    def validate(self):
++        if nonnegative_integer(self.repeats, 'repeats') < 2:
++            raise ValueError('至少两个独立重复')
++        if nonnegative_integer(self.candidate_count, 'candidate_count') < 4:
++            raise ValueError('候选数至少4')
++        if nonnegative_integer(self.holdout_count, 'holdout_count') < 3:
++            raise ValueError('留出数至少3')
++        if nonnegative_integer(self.bootstrap_repeats, 'bootstrap_repeats') < 2:
++            raise ValueError('bootstrap_repeats 至少2')
++        for name in ('candidate_seed', 'holdout_seed', 'noise_seed', 'selection_seed', 'robot_noise_seed', 'bootstrap_seed'):
++            nonnegative_integer(getattr(self, name), name)
++        # 分离随机流区间；相同数字种子用于不同用途会产生非预期相关。
++        starts = [getattr(self, name) for name in ('candidate_seed', 'holdout_seed', 'noise_seed', 'selection_seed', 'robot_noise_seed')]
++        if any(abs(a-b) < self.repeats for i, a in enumerate(starts) for b in starts[i+1:]):
++            raise ValueError('各随机流的种子区间必须分离')
++        for name in ('sample_counts', 'initial_ids', 'strategies', 'methods', 'conditions'):
++            values = getattr(self, name)
++            if not values:
++                raise ValueError(f'{name} 不可为空')
++        if len(set(self.sample_counts)) != len(self.sample_counts) or len(set(self.initial_ids)) != len(self.initial_ids):
++            raise ValueError('样本量或初始 ID 不可重复')
++        for value in self.initial_ids:
++            if nonnegative_integer(value, 'initial_ids') >= self.candidate_count:
++                raise ValueError('初始 ID 超出候选范围')
++        for value in self.sample_counts:
++            n = nonnegative_integer(value, 'sample_counts')
++            if not max(3, len(self.initial_ids)) <= n <= self.candidate_count:
++                raise ValueError('样本量超出合法范围')
++        for name, allowed in (('strategies', STRATEGIES), ('methods', METHODS)):
++            values = getattr(self, name)
++            if len(set(values)) != len(values) or any(x not in allowed for x in values):
++                raise ValueError(f'{name} 包含重复或未知值')
++        names = []
++        for noise in self.conditions:
++            if not isinstance(noise, Noise) or not isinstance(noise.name, str) or not noise.name.isidentifier():
++                raise ValueError('噪声条件须有合法唯一名称')
++            names.append(noise.name)
++            for key, value in asdict(noise).items():
++                if key != 'name':
++                    nonnegative_real(value, key)
++        if len(set(names)) != len(names) or names[0] != 'baseline' or self.conditions[0] != Noise('baseline'):
++            raise ValueError('第一个条件必须是全零 baseline，名称不得重复')
++        if not isinstance(self.scene, SceneConfig):
++            raise ValueError('scene 类型错误')
++        self.scene.truth()
++
++
++def perturb_poses(poses, standard_noise, *, rotation_rad, translation_m):
++    """在位姿的目标系左乘旋转、独立相加平移；不重生成几何观测。"""
++    poses = pose_stack(poses, minimum=1)
++    z = np.asarray(standard_noise)
++    if z.shape != (len(poses), 6) or z.dtype.kind not in 'iuf' or not np.all(np.isfinite(z)):
++        raise ValueError('标准噪声须为有限实数 (N,6)')
++    sr = nonnegative_real(rotation_rad, 'rotation_rad')
++    st = nonnegative_real(translation_m, 'translation_m')
++    poses[:, :3, :3] = Rotation.from_rotvec(z[:, :3]*sr).as_matrix() @ poses[:, :3, :3]
++    poses[:, :3, 3] += z[:, 3:]*st
++    return poses
++
++
++def trial_plan(config):
++    """condition 在最外层，保证全部无噪声先于任何噪声试次。"""
++    return [dict(trial_id=f'{noise.name}_{r:03d}_{strategy}_{n}_{method}', condition=noise.name,
++                 repeat=r, strategy=strategy, n_samples=n, method=method)
++            for noise in config.conditions for r in range(config.repeats)
++            for strategy in config.strategies for n in config.sample_counts for method in config.methods]
++
++
++def prepare_repeat(config, repeat):
++    """生成端可以访问真值；选择器只收到 g 与 ID。"""
++    data = generate_dataset(config.candidate_count, seed=config.candidate_seed+repeat, scene=config.scene)
++    holdout = generate_dataset(config.holdout_count, seed=config.holdout_seed+repeat, scene=config.scene)
++    raw = dict(candidate_g=data.t_b_g, candidate_q=data.t_c_t, holdout_g=holdout.t_b_g,
++               holdout_q=holdout.t_c_t, x_true=data.t_g_c_true, y_true=data.t_b_t_true,
++               candidate_ids=np.arange(config.candidate_count), holdout_ids=np.arange(config.holdout_count),
++               camera_standard_noise=np.random.default_rng(config.noise_seed+repeat).normal(size=(config.candidate_count, 6)),
++               robot_standard_noise=np.random.default_rng(config.robot_noise_seed+repeat).normal(size=(config.candidate_count, 6)),
++               points=board_reference_points())
++    selections = {}
++    for strategy in config.strategies:
++        start = time.perf_counter()
++        selection = select_poses(raw['candidate_g'], candidate_ids=raw['candidate_ids'],
++                                 initial_ids=config.initial_ids, n_samples=max(config.sample_counts),
++                                 strategy=strategy, seed=config.selection_seed+repeat)
++        selections[strategy] = dict(ids=list(selection.ids), scores_rad=list(selection.scores_rad),
++                                    seconds=time.perf_counter()-start)
++    return raw, selections
++
++
++def trial_inputs(raw, selection, trial, noise):
++    ids = np.asarray(selection['ids'][:trial['n_samples']], dtype=int)
++    g = perturb_poses(raw['candidate_g'], raw['robot_standard_noise'],
++                      rotation_rad=np.deg2rad(noise.robot_rotation_deg), translation_m=noise.robot_translation_mm/1000)
++    q = perturb_poses(raw['candidate_q'], raw['camera_standard_noise'],
++                      rotation_rad=np.deg2rad(noise.rotation_deg), translation_m=noise.translation_mm/1000)
++    return g[ids], q[ids], ids
++
++
++def evaluate_estimate(estimate, raw):
++    error = pose_error(estimate, raw['x_true'])
++    held = heldout_metrics(estimate, raw['holdout_g'], raw['holdout_q'], raw['y_true'], points=raw['points'])
++    metrics = dict(rotation_error_deg=error.rotation_deg, translation_error_mm=error.translation_mm,
++                   point_rmse_mm=held['point_rmse_m']*1000, point_max_mm=held['point_max_m']*1000,
++                   closure_rotation_rmse_deg=float(np.rad2deg(held['closure_rotation_rmse_rad'])),
++                   closure_translation_rmse_mm=held['closure_translation_rmse_m']*1000)
++    if not all(np.isfinite(x) for x in metrics.values()):
++        raise ValueError('评价产生非有限数值')
++    return metrics, held
++
++
++def summarize(rows):
++    groups = {}
++    for row in rows:
++        key = (row['condition'], row['strategy'], row['method'], int(row['n_samples']))
++        groups.setdefault(key, []).append(row)
++    result = []
++    for (condition, strategy, method, n), members in groups.items():
++        ok = [r for r in members if r['status'] == 'ok']
++        item = dict(condition=condition, strategy=strategy, method=method, n_samples=n,
++                    total=len(members), success=len(ok), failed=len(members)-len(ok),
++                    failure_rate=(len(members)-len(ok))/len(members))
++        for metric in METRICS:
++            values = np.asarray([float(r[metric]) for r in ok])
++            stats = dict(mean=float(values.mean()) if len(values) else None,
++                         std=float(values.std(ddof=1)) if len(values)>1 else None,
++                         median=float(np.median(values)) if len(values) else None,
++                         q25=float(np.quantile(values, .25)) if len(values) else None,
++                         q75=float(np.quantile(values, .75)) if len(values) else None,
++                         max=float(values.max()) if len(values) else None)
++            item.update({metric+'_'+k: v for k, v in stats.items()})
++        result.append(item)
++    return result
++
++
++def paired_comparison(rows, config):
++    """预设主比较，负差值支持 farthest；只使用共同成功配对并披露分母。"""
++    selected = [r for r in rows if r['condition']=='mixed' and r['method']=='PARK' and int(r['n_samples'])==20]
++    groups = {s: {int(r['repeat']):r for r in selected if r['strategy']==s}
++              for s in ('random', 'rotation_farthest')}
++    pairs = []
++    for repeat in sorted(set(groups['random']) & set(groups['rotation_farthest'])):
++        a, b = groups['random'][repeat], groups['rotation_farthest'][repeat]
++        if a['status']==b['status']=='ok':
++            pairs.append(dict(repeat=repeat, delta_mm=float(b['point_rmse_mm'])-float(a['point_rmse_mm'])))
++    values = np.asarray([p['delta_mm'] for p in pairs])
++    result = dict(comparison='rotation_farthest - random; N=20, mixed, PARK, heldout point RMSE',
++                  eligible_repeats=len(set(groups['random']) & set(groups['rotation_farthest'])),
++                  paired_success=len(pairs), pairs=pairs, mean_delta_mm=None, ci95_mm=None,
++                  bootstrap_seed=config.bootstrap_seed, bootstrap_repeats=config.bootstrap_repeats)
++    if len(values):
++        result['mean_delta_mm'] = float(values.mean())
++    if len(values)>1:
++        draws = np.random.default_rng(config.bootstrap_seed).choice(values, (config.bootstrap_repeats, len(values)), replace=True)
++        result['ci95_mm'] = np.quantile(draws.mean(axis=1), [.025, .975]).tolist()
++    return result
++
++
++def write_csv(path, rows):
++    with Path(path).open('w', newline='', encoding='utf-8') as f:
++        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
++        writer.writeheader(); writer.writerows(rows)
++
++
++def run_m2(config, output):
++    """仅创建新目录；中断后另建运行，不支持不经核验的原地续跑。"""
++    config.validate()
++    output = Path(output)
++    output.mkdir(parents=True, exist_ok=False)
++    (output/'raw').mkdir(); (output/'estimates').mkdir()
++    write_json(output/'config.json', asdict(config))
++    write_json(output/'environment.json', dict(python=platform.python_version(), numpy=np.__version__,
++                                              scipy=scipy.__version__, opencv=cv2.__version__))
++    write_json(output/'code_hashes.json', code_hashes())
++    plan = trial_plan(config)
++    write_json(output/'trial_plan.json', plan)
++    write_json(output/'run_status.json', dict(status='running', planned=len(plan), completed=0))
++    rows, raw_sets, selections = [], {}, {}
++    phase, current = 'prepare', None
++    baseline_count = sum(t['condition']=='baseline' for t in plan)
++    baseline_passed = False
++    try:
++        for repeat in range(config.repeats):
++            raw, selection = prepare_repeat(config, repeat)
++            raw_sets[repeat], selections[str(repeat)] = raw, selection
++            np.savez_compressed(output/f'raw/repeat_{repeat:03d}.npz', **raw)
++        write_json(output/'selections.json', selections)
++        noises = {n.name:n for n in config.conditions}
++        with (output/'trials.csv').open('w', newline='', encoding='utf-8') as f:
++            writer = None
++            for trial in plan:
++                current = dict(trial, status='error', failure_stage='', message='', traceback_file='',
++                               candidate_seed=config.candidate_seed+trial['repeat'], holdout_seed=config.holdout_seed+trial['repeat'],
++                               noise_seed=config.noise_seed+trial['repeat'], selection_seed=config.selection_seed+trial['repeat'],
++                               robot_noise_seed=config.robot_noise_seed+trial['repeat'], data_file=f"raw/repeat_{trial['repeat']:03d}.npz",
++                               estimate_file='', selection_ids='', selection_seconds='', solve_seconds='', closure_max_abs='',
++                               rotation_sigma_deg='', translation_sigma_mm='', robot_rotation_sigma_deg='', robot_translation_sigma_mm='',
++                               **{metric:'' for metric in METRICS})
++                if writer is None:
++                    writer = csv.DictWriter(f, fieldnames=list(current)); writer.writeheader()
++                phase = 'inputs'
++                try:
++                    raw = raw_sets[trial['repeat']]
++                    selection = selections[str(trial['repeat'])][trial['strategy']]
++                    noise = noises[trial['condition']]
++                    g, q, ids = trial_inputs(raw, selection, trial, noise)
++                    closure = float(np.max(np.abs(raw['candidate_g'][ids] @ raw['x_true'] @ raw['candidate_q'][ids]-raw['y_true'])))
++                    if closure >= 1e-12:
++                        raise ValueError('所选理想几何闭环失败')
++                    current.update(selection_ids=json.dumps(ids.tolist()), selection_seconds=selection['seconds'],
++                                   closure_max_abs=closure, rotation_sigma_deg=noise.rotation_deg, translation_sigma_mm=noise.translation_mm,
++                                   robot_rotation_sigma_deg=noise.robot_rotation_deg, robot_translation_sigma_mm=noise.robot_translation_mm)
++                    phase = 'solve'; start = time.perf_counter()
++                    estimate = calibrate_hand_eye(g, q, method=trial['method'])
++                    current['solve_seconds'] = time.perf_counter()-start
++                    phase = 'evaluate'
++                    metrics, held = evaluate_estimate(estimate, raw)
++                    current.update(metrics, status='ok', estimate_file=f"estimates/{trial['trial_id']}.json")
++                    phase = 'persist_estimate'
++                    write_json(output/current['estimate_file'], dict(t_g_c=estimate.tolist(), heldout=held))
++                except (Exception, KeyboardInterrupt) as exc:
++                    current.update(status='error', failure_stage=phase, message=f'{type(exc).__name__}: {exc}')
++                    current.update({metric:'' for metric in METRICS})
++                    expected = phase=='solve' and isinstance(exc, (CalibrationError, ValueError))
++                    if not expected:
++                        current['traceback_file'] = 'traceback.txt'
++                        write_json(output/'failure_context.json', dict(trial=current['trial_id'], phase=phase))
++                        (output/'traceback.txt').write_text(traceback.format_exc(), encoding='utf-8')
++                    rows.append(current); writer.writerow(current); f.flush()
++                    if not expected:
++                        raise
++                else:
++                    rows.append(current); writer.writerow(current); f.flush()
++                if trial['condition']=='baseline':
++                    passed = current['status']=='ok' and current['rotation_error_deg'] < np.rad2deg(1e-6) and current['translation_error_mm'] < .001
++                    if not passed:
++                        write_json(output/'baseline_gate.json', dict(passed=False, failed_trial=trial['trial_id'], checked=len(rows)))
++                        raise RuntimeError('无噪声关卡失败，停止噪声实验')
++                    if len(rows)==baseline_count:
++                        baseline_passed = True
++                        write_json(output/'baseline_gate.json', dict(passed=True, checked=baseline_count))
++                if len(rows)%max(1, len(config.methods)*len(config.sample_counts)*len(config.strategies))==0:
++                    write_json(output/'run_status.json', dict(status='running', planned=len(plan), completed=len(rows), baseline_passed=baseline_passed))
++        phase = 'summary'
++        summary, paired = summarize(rows), paired_comparison(rows, config)
++        write_json(output/'summary.json', summary); write_csv(output/'summary.csv', summary)
++        write_json(output/'paired.json', paired)
++        phase = 'plot'
++        from .m2_plotting import plot_m2
++        plot_m2(output)
++        failures = sum(r['status']!='ok' for r in rows)
++        (output/'RESULTS.md').write_text(
++            '# M2 实验结果\n\n'
++            f'计划 {len(plan)} 次，实际 {len(rows)} 次，成功 {len(rows)-failures}，失败 {failures}。无噪声 {baseline_count} 次通过。\n\n'
++            '独立重复单位是 repeat；重放、帧和板点不增加独立样本数。误差汇总条件于求解成功，同时报告失败率。\n\n'
++            f"预设主比较（farthest-random，N20/mixed/PARK）有效配对 {paired['paired_success']}，均值差 {paired['mean_delta_mm']} mm，"
++            f"95% 配对 bootstrap 区间 {paired['ci95_mm']} mm。负值表示 farthest 的留出点 RMSE 较低。\n\n"
++            'error_vs_samples 图为均值±样本SD，不是置信区间；paired 图是按独立 repeat 的配对差值；failure_rate 图保留零失败。\n\n'
++            'closure_max_abs 只检查实际所选理想 G/Q 的几何闭环。当前是位姿观测仿真，不包含视野、图像、机器人可达性或实际运动时间。\n'
++            '未证明启发式最优或创新性；不同场景与噪声可能推翻当前趋势。\n', encoding='utf-8')
++        status = dict(status='complete', planned=len(plan), completed=len(rows), succeeded=len(rows)-failures,
++                      failed=failures, baseline_passed=baseline_passed, baseline_trials=baseline_count)
++        write_json(output/'run_status.json', status)
++        write_json(output/'artifact_hashes.json', {p.relative_to(output).as_posix():digest(p) for p in sorted(output.rglob('*')) if p.is_file()})
++        return status
++    except (Exception, KeyboardInterrupt) as exc:
++        (output/'traceback.txt').write_text(traceback.format_exc(), encoding='utf-8')
++        write_json(output/'run_status.json', dict(status='interrupted' if isinstance(exc, KeyboardInterrupt) else 'failed',
++                   planned=len(plan), completed=len(rows), baseline_passed=baseline_passed,
++                   failure_stage=phase, message=f'{type(exc).__name__}: {exc}', traceback_file='traceback.txt'))
++        raise
+--- /dev/null
++++ after/src/handeye/m2_plotting.py
+@@ -0,0 +1,66 @@
++"""读取已保存统计绘图；只呈现实际结果，无 GUI。"""
++import json
++from pathlib import Path
++
++import matplotlib
++matplotlib.use('Agg')
++import matplotlib.pyplot as plt
++import numpy as np
++
++COLORS = {'ordered':'#737373', 'random':'#0072B2', 'rotation_farthest':'#D55E00'}
++
++
++def plot_m2(folder):
++    folder = Path(folder)
++    summary = json.loads((folder/'summary.json').read_text(encoding='utf-8'))
++    paired = json.loads((folder/'paired.json').read_text(encoding='utf-8'))
++    # 三种单图对应：误差、配对收益、失败分母；不强制虚构缺失的主比较。
++    selected = [r for r in summary if r['method']=='PARK' and r['condition']=='mixed']
++    if not selected:
++        selected = [r for r in summary if r['method']=='PARK' and r['condition']!='baseline']
++        selected = [r for r in selected if r['condition']==selected[0]['condition']] if selected else []
++    label = selected[0]['condition'] if selected else 'comparison unavailable'
++    with plt.rc_context({'font.size':10, 'axes.spines.top':False, 'axes.spines.right':False,
++                         'pdf.fonttype':42, 'savefig.dpi':180}):
++        for kind in ('error_vs_samples', 'paired_difference', 'failure_rate'):
++            fig, ax = plt.subplots(figsize=(7.2, 4.8), layout='constrained')
++            try:
++                if kind=='error_vs_samples':
++                    for strategy, color in COLORS.items():
++                        group = sorted([r for r in selected if r['strategy']==strategy], key=lambda r:r['n_samples'])
++                        ok = [r for r in group if r['point_rmse_mm_mean'] is not None]
++                        if ok:
++                            means = [r['point_rmse_mm_mean'] for r in ok]
++                            sd = [r['point_rmse_mm_std'] if r['point_rmse_mm_std'] is not None else np.nan for r in ok]
++                            ax.errorbar([r['n_samples'] for r in ok], means, yerr=sd, marker='o', capsize=4,
++                                        label=strategy, color=color)
++                    ax.set(xlabel='Selected poses (including initialization)', ylabel='Held-out point RMSE (mm)',
++                           title=f'PARK / {label}: mean ± sample SD')
++                    if ax.get_legend_handles_labels()[0]:
++                        ax.legend(frameon=False)
++                    else:
++                        ax.text(.5, .5, 'No successful comparison', ha='center', transform=ax.transAxes)
++                elif kind=='paired_difference':
++                    pairs = paired['pairs']
++                    if pairs:
++                        ax.scatter([r['repeat'] for r in pairs], [r['delta_mm'] for r in pairs], color='#0072B2')
++                        ax.axhline(0, color='black', lw=1, ls='--')
++                        ci = paired['ci95_mm']
++                        interval = 'CI unavailable' if ci is None else f'95% paired bootstrap CI [{ci[0]:.3f}, {ci[1]:.3f}] mm'
++                        ax.set_title(f"PARK / mixed / N=20; paired n={len(pairs)}\n{interval}")
++                    else:
++                        ax.text(.5, .5, 'Primary paired comparison unavailable', ha='center', transform=ax.transAxes)
++                    ax.set(xlabel='Independent repeat ID', ylabel='Farthest − random: point RMSE (mm)')
++                else:
++                    group = sorted(selected, key=lambda r:(r['strategy'], r['n_samples']))
++                    x = np.arange(len(group))
++                    ax.bar(x, [r['failure_rate'] for r in group], color=[COLORS[r['strategy']] for r in group])
++                    for i, row in enumerate(group):
++                        ax.text(i, row['failure_rate']+.025, f"{row['failed']}/{row['total']}", ha='center', fontsize=8)
++                    ax.set_xticks(x, [f"{r['strategy']}\nN={r['n_samples']}" for r in group], rotation=30, ha='right')
++                    ax.set(ylabel='Failed / attempted', ylim=(0, 1.15), title=f'PARK / {label}: failures retained')
++                ax.grid(axis='y', alpha=.2)
++                fig.savefig(folder/f'{kind}.png')
++                fig.savefig(folder/f'{kind}.pdf')
++            finally:
++                plt.close(fig)
+--- /dev/null
++++ after/src/handeye/m2_verification.py
+@@ -0,0 +1,118 @@
++"""从保存的 M2 原始数据重放，核查配置、索引、统计和估计。"""
++import csv
++import json
++from pathlib import Path
++
++import numpy as np
++
++from .calibration import calibrate_hand_eye
++from .m2_experiments import (M2Config, METRICS, digest, evaluate_estimate, paired_comparison,
++                             summarize, trial_inputs, trial_plan)
++from .sampling import select_poses
++
++
++def _read(folder, name):
++    return json.loads((folder/name).read_text(encoding='utf-8'))
++
++
++def _check(condition, message):
++    if not condition:
++        raise ValueError(message)
++
++
++def verify_m2(folder, *, replay=True):
++    folder = Path(folder)
++    status = _read(folder, 'run_status.json')
++    _check(status['status']=='complete' and status['baseline_passed'], '只能验收已完成且基线通过的实验')
++    hashes = _read(folder, 'artifact_hashes.json')
++    actual_files = {p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file()}-{'artifact_hashes.json'}
++    _check(set(hashes)==actual_files, '文件清单不一致')
++    for name, expected in hashes.items():
++        path = (folder/name).resolve()
++        _check(path.is_relative_to(folder.resolve()), '产物路径越界')
++        _check(digest(path)==expected, f'文件哈希不一致: {name}')
++    config = M2Config.from_dict(_read(folder, 'config.json'))
++    plan = trial_plan(config)
++    _check(_read(folder, 'trial_plan.json')==plan, '计划与配置不一致')
++    with (folder/'trials.csv').open(encoding='utf-8', newline='') as f:
++        rows = list(csv.DictReader(f))
++    _check([r['trial_id'] for r in rows]==[r['trial_id'] for r in plan], '试次缺失、重复或顺序错误')
++    _check(status['completed']==len(rows)==status['planned'], '试次总计错误')
++    _check(status['failed']==sum(r['status']!='ok' for r in rows), '失败计数错误')
++    _check(status['succeeded']==sum(r['status']=='ok' for r in rows), '成功计数错误')
++    selections = _read(folder, 'selections.json')
++    raw_sets = {}
++    for repeat in range(config.repeats):
++        with np.load(folder/f'raw/repeat_{repeat:03d}.npz', allow_pickle=False) as data:
++            raw = {k:data[k] for k in data.files}
++        raw_sets[repeat] = raw
++        np.testing.assert_array_equal(raw['candidate_ids'], np.arange(config.candidate_count))
++        _check(len(raw['holdout_g'])==config.holdout_count, '留出数量错误')
++        for strategy in config.strategies:
++            expected = select_poses(raw['candidate_g'], candidate_ids=raw['candidate_ids'],
++                                    initial_ids=config.initial_ids, n_samples=max(config.sample_counts),
++                                    strategy=strategy, seed=config.selection_seed+repeat)
++            saved = selections[str(repeat)][strategy]
++            _check(saved['ids']==list(expected.ids), '选择顺序与固定协议不一致')
++            _check(saved['scores_rad']==list(expected.scores_rad), '选择分数不一致')
++    noises = {n.name:n for n in config.conditions}
++    replayed = 0
++    for row, planned in zip(rows, plan):
++        for key, value in planned.items():
++            _check(row[key]==str(value), f'试次元数据错误: {key}')
++        repeat = int(row['repeat']); raw = raw_sets[repeat]
++        for key in ('candidate_seed','holdout_seed','noise_seed','selection_seed','robot_noise_seed'):
++            _check(int(row[key])==getattr(config,key)+repeat, f'种子错误: {key}')
++        selection = selections[str(repeat)][row['strategy']]
++        g, q, ids = trial_inputs(raw, selection, planned, noises[row['condition']])
++        _check(json.loads(row['selection_ids'])==ids.tolist(), '采样前缀错误')
++        closure = np.max(np.abs(raw['candidate_g'][ids] @ raw['x_true'] @ raw['candidate_q'][ids]-raw['y_true']))
++        np.testing.assert_allclose(float(row['closure_max_abs']), closure, rtol=0, atol=1e-15)
++        if row['status']=='ok':
++            saved = _read(folder, row['estimate_file'])
++            estimate = np.asarray(saved['t_g_c'])
++            if replay:
++                new_estimate = calibrate_hand_eye(g, q, method=row['method'])
++                np.testing.assert_allclose(new_estimate, estimate, atol=1e-12, rtol=0)
++                replayed += 1
++            metrics, held = evaluate_estimate(estimate, raw)
++            for metric in METRICS:
++                np.testing.assert_allclose(float(row[metric]), metrics[metric], rtol=0, atol=1e-10)
++            for key in held:
++                np.testing.assert_allclose(saved['heldout'][key], held[key], rtol=0, atol=1e-12)
++        else:
++            _check(row['status']=='error' and all(row[m]=='' for m in METRICS) and bool(row['message']), '失败行非法')
++    baseline = [r for r in rows if r['condition']=='baseline']
++    _check(all(r['status']=='ok' and float(r['rotation_error_deg'])<np.rad2deg(1e-6)
++               and float(r['translation_error_mm'])<.001 for r in baseline), '无噪声指标未通过')
++    _check(_read(folder,'baseline_gate.json')=={'passed':True,'checked':len(baseline)}, '基线计数不一致')
++    _check(_read(folder,'summary.json')==summarize(rows), '统计复算不一致')
++    with (folder/'summary.csv').open(encoding='utf-8',newline='') as f:
++        summary_csv=list(csv.DictReader(f))
++    _check(summary_csv==[{k:'' if v is None else str(v) for k,v in r.items()} for r in summarize(rows)], '汇总 CSV 不一致')
++    _check(_read(folder,'paired.json')==paired_comparison(rows,config), '配对复算不一致')
++    return dict(result='PASS', trials=len(rows), replayed_successes=replayed, raw_datasets=len(raw_sets),
++                note='重放不增加独立重复数；失败试次保留，未伪称成功重放')
++
++
++def compare_runs(first, second):
++    """同配置独立进程比较；排除时间戳、执行耗时与压缩文件元数据。"""
++    first, second = Path(first), Path(second)
++    _check(_read(first,'config.json')==_read(second,'config.json'), '两次配置不同')
++    for name in ('summary.json','paired.json','baseline_gate.json','trial_plan.json'):
++        _check(_read(first,name)==_read(second,name), f'独立重跑不同: {name}')
++    for path in sorted((first/'raw').glob('*.npz')):
++        with np.load(path,allow_pickle=False) as a, np.load(second/'raw'/path.name,allow_pickle=False) as b:
++            _check(set(a.files)==set(b.files), '原始字段不同')
++            for key in a.files:
++                np.testing.assert_array_equal(a[key],b[key])
++    a,b=_read(first,'selections.json'),_read(second,'selections.json')
++    for repeat in a:
++        for strategy in a[repeat]:
++            for key in ('ids','scores_rad'):
++                _check(a[repeat][strategy][key]==b[repeat][strategy][key], '选择结果不一致')
++    def numerical_rows(folder):
++        with (folder/'trials.csv').open(encoding='utf-8',newline='') as f:
++            return [{k:v for k,v in r.items() if k not in ('selection_seconds','solve_seconds')} for r in csv.DictReader(f)]
++    _check(numerical_rows(first)==numerical_rows(second),'试次非时间字段不一致')
++    return dict(result='PASS', identical_trials=len(numerical_rows(first)))
+--- /dev/null
++++ after/src/handeye/projection_experiment.py
+@@ -0,0 +1,232 @@
++"""W2 固定协议：几何可见性及由训练估计预测的可见性；无像素噪声。"""
++from collections import Counter
++from dataclasses import asdict, dataclass, field
++import csv
++import json
++from pathlib import Path
++import platform
++import traceback
++
++import cv2
++import numpy as np
++import scipy
++from scipy.spatial.transform import Rotation
++
++from .calibration import calibrate_hand_eye, motion_diagnostics
++from .camera import Camera, board_grid, estimate_target_in_base, measure_visibility, predict_visibility, project_points
++from .m2_experiments import code_hashes, digest, write_json
++from .metrics import pose_error
++from .simulation import SceneConfig, nonnegative_integer
++from .transforms import invert_transform, make_transform
++
++
++@dataclass(frozen=True)
++class ProjectionConfig:
++    repeats: int = 30
++    seed_start: int = 510000
++    candidate_count: int = 120
++    training_count: int = 20
++    camera: Camera = field(default_factory=Camera)
++    scene: SceneConfig = field(default_factory=SceneConfig)
++
++    @classmethod
++    def from_dict(cls, values):
++        values = dict(values)
++        for key, constructor in (('camera', Camera), ('scene', SceneConfig)):
++            if key in values:
++                values[key] = constructor(**values[key])
++        result = cls(**values)
++        result.validate()
++        return result
++
++    def validate(self):
++        if nonnegative_integer(self.repeats, 'repeats') < 1:
++            raise ValueError('repeats 至少1')
++        nonnegative_integer(self.seed_start, 'seed_start')
++        if not 3 <= nonnegative_integer(self.training_count, 'training_count') < nonnegative_integer(self.candidate_count, 'candidate_count'):
++            raise ValueError('须有至少3个训练位姿和额外评价候选')
++        if not isinstance(self.camera, Camera) or not isinstance(self.scene, SceneConfig):
++            raise ValueError('camera/scene 类型错误')
++        self.camera.validate(); self.scene.truth()
++
++
++def generate_projection_candidates(config, seed):
++    """生成端访问真值，G=Y inv(Q) inv(X)；不按可见性重采样。"""
++    config.validate()
++    seed = nonnegative_integer(seed, 'seed')
++    rng = np.random.default_rng(seed)
++    x, y = config.scene.truth()
++    g, q = [], []
++    for _ in range(config.candidate_count):
++        r = Rotation.from_rotvec(rng.uniform(-.5, .5, 3)).as_matrix()
++        t = rng.uniform([-.45, -.32, .35], [.45, .32, .9])
++        observation = make_transform(r, t)
++        q.append(observation)
++        g.append(y @ invert_transform(observation) @ invert_transform(x))
++    return dict(g=np.stack(g), q=np.stack(q), x_true=x, y_true=y, points=board_grid())
++
++
++def analyze_candidates(raw, config, seed):
++    """测量端判定后，以前20可见样本作理想训练；非主动采样对比。"""
++    g, q, points = raw['g'], raw['q'], raw['points']
++    closure = float(np.max(np.abs(g @ raw['x_true'] @ q-raw['y_true'])))
++    if closure >= 1e-12:
++        raise ValueError('W2 理想闭环失败')
++    measured = [measure_visibility(observation, config.camera, points=points) for observation in q]
++    visible_ids = [i for i, result in enumerate(measured) if result.visible]
++    if len(visible_ids) < config.training_count:
++        raise ValueError(f'seed={seed}: 可见候选不足，不重新抽取种子')
++    train = visible_ids[:config.training_count]
++    if not motion_diagnostics(g[train])['nondegenerate']:
++        raise ValueError(f'seed={seed}: 训练运动退化')
++    estimates, baseline = {}, []
++    for method in ('PARK', 'TSAI'):
++        x = calibrate_hand_eye(g[train], q[train], method=method)
++        error = pose_error(x, raw['x_true'])
++        baseline.append(dict(seed=seed, method=method, rotation_error_deg=error.rotation_deg,
++                             translation_error_mm=error.translation_mm))
++        if error.rotation_rad >= 1e-6 or error.translation_m >= 1e-6:
++            raise ValueError(f'seed={seed}: {method} 无噪声恢复失败')
++        estimates[method] = x.tolist()
++    # 训练估计先得到Y_hat，规划端不接收Q_true、X_true或Y_true。
++    x_est = np.asarray(estimates['PARK'])
++    y_est = estimate_target_in_base(g[train], q[train], x_est)
++    evaluated = [i for i in range(len(g)) if i not in train]
++    predictions = {i:predict_visibility(g[i], x_est, y_est, config.camera, points=points) for i in evaluated}
++    rows, pixel_errors = [], []
++    for i, measurement in enumerate(measured):
++        pixels, _ = project_points(points, q[i], config.camera)
++        reference, _ = cv2.projectPoints(points, Rotation.from_matrix(q[i, :3, :3]).as_rotvec(),
++                                         q[i, :3, 3], config.camera.matrix(), None)
++        error = float(np.max(np.abs(pixels-reference.reshape(-1, 2))))
++        if error >= 1e-8:
++            raise ValueError('OpenCV投影对照超过预设阈值')
++        pixel_errors.append(error)
++        prediction = predictions.get(i)
++        rows.append(dict(seed=seed, candidate_id=i, training=i in train, measured_visible=measurement.visible,
++                         measured_reason=measurement.reason, predicted_visible='' if prediction is None else prediction.visible,
++                         predicted_reason='' if prediction is None else prediction.reason,
++                         min_depth_m=float(measurement.depths_m.min()), max_projection_error_px=error))
++    incorrect = sum(predictions[i].visible != measured[i].visible for i in evaluated)
++    result = dict(seed=seed, candidates=len(g), visible=len(visible_ids), rejected=len(g)-len(visible_ids),
++                  reasons=dict(Counter(r.reason for r in measured)), training_ids=train,
++                  predicted_candidates=len(evaluated), prediction_mismatches=incorrect,
++                  closure_max_abs=closure, max_projection_error_px=max(pixel_errors))
++    extra = dict(pixels=np.stack([r.pixels for r in measured]), depths_m=np.stack([r.depths_m for r in measured]),
++                 measured_visible=np.array([r.visible for r in measured]),
++                 training_ids=np.array(train), prediction_ids=np.array(evaluated),
++                 predicted_visible=np.array([predictions[i].visible for i in evaluated]),
++                 x_est=x_est, y_est=y_est)
++    return rows, result, baseline, estimates, extra
++
++
++def aggregate(results, baseline):
++    reasons = Counter()
++    for r in results:
++        reasons.update(r['reasons'])
++    return dict(repeats=len(results), candidates=sum(r['candidates'] for r in results),
++                visible=sum(r['visible'] for r in results), rejected=sum(r['rejected'] for r in results),
++                reasons=dict(reasons), min_visible_per_repeat=min(r['visible'] for r in results),
++                predicted_candidates=sum(r['predicted_candidates'] for r in results),
++                prediction_mismatches=sum(r['prediction_mismatches'] for r in results),
++                baseline_solves=len(baseline), baseline_failures=0,
++                max_closure_abs=max(r['closure_max_abs'] for r in results),
++                max_projection_error_px=max(r['max_projection_error_px'] for r in results),
++                max_rotation_error_deg=max(r['rotation_error_deg'] for r in baseline),
++                max_translation_error_mm=max(r['translation_error_mm'] for r in baseline))
++
++
++def plot_projection_examples(folder, raw, camera):
++    """实际候选二维点示意；单图标清可见和越界，不模仿相机照片。"""
++    import matplotlib
++    matplotlib.use('Agg')
++    import matplotlib.pyplot as plt
++    results = [measure_visibility(q, camera, points=raw['points']) for q in raw['q']]
++    for label, visible in (('visible', True), ('rejected', False)):
++        index = next((i for i, r in enumerate(results) if r.visible==visible), None)
++        if index is None:
++            continue
++        result = results[index]
++        fig, ax = plt.subplots(figsize=(6.4, 5.2), layout='constrained')
++        try:
++            ax.scatter(result.pixels[:, 0], result.pixels[:, 1], s=14, color='#0072B2')
++            from matplotlib.patches import Rectangle
++            ax.add_patch(Rectangle((0, 0), camera.width-1, camera.height-1, fill=False, color='black'))
++            ax.add_patch(Rectangle((camera.margin, camera.margin), camera.width-1-2*camera.margin,
++                                  camera.height-1-2*camera.margin, fill=False, ls='--', color='#D55E00'))
++            ax.set(xlabel='u (pixel)', ylabel='v (pixel)', title=f'Synthetic projected points: ID {index}, {result.reason}')
++            ax.set_xlim(min(-40, result.pixels[:, 0].min()-30), max(camera.width+40, result.pixels[:, 0].max()+30))
++            ax.set_ylim(max(camera.height+40, result.pixels[:, 1].max()+30), min(-40, result.pixels[:, 1].min()-30))
++            ax.set_aspect('equal'); ax.grid(alpha=.2)
++            fig.savefig(folder/f'projection_{label}.png', dpi=180)
++            fig.savefig(folder/f'projection_{label}.pdf')
++        finally:
++            plt.close(fig)
++
++
++def run_projection(config, output):
++    config.validate()
++    output = Path(output)
++    output.mkdir(parents=True, exist_ok=False)
++    (output/'raw').mkdir(); (output/'estimates').mkdir()
++    write_json(output/'config.json', asdict(config))
++    hashes = code_hashes()
++    root = Path(__file__).resolve().parents[2]
++    for name in ('run_projection.py', 'verify_projection.py'):
++        path = root/'scripts'/name
++        if path.exists():
++            hashes[path.relative_to(root).as_posix()] = digest(path)
++    write_json(output/'code_hashes.json', hashes)
++    write_json(output/'environment.json', dict(python=platform.python_version(), opencv=cv2.__version__,
++                                              numpy=np.__version__, scipy=scipy.__version__))
++    write_json(output/'run_status.json', dict(status='running', completed_repeats=0))
++    (output/'opencv_projectpoints_doc.txt').write_text(cv2.projectPoints.__doc__, encoding='utf-8')
++    results, baseline = [], []
++    phase, seed = 'prepare', config.seed_start
++    try:
++        with (output/'candidates.csv').open('w', encoding='utf-8', newline='') as f:
++            writer = None
++            for repeat in range(config.repeats):
++                seed = config.seed_start+repeat
++                phase = 'generate'
++                raw = generate_projection_candidates(config, seed)
++                # 即使分析失败也先保存当前候选；不会改种子补一个好样本。
++                raw_path = output/f'raw/seed_{seed}.npz'
++                np.savez_compressed(raw_path, **raw)
++                phase = 'analyze'
++                rows, result, checks, estimates, extra = analyze_candidates(raw, config, seed)
++                phase = 'persist'
++                np.savez_compressed(raw_path, **raw, **extra)
++                write_json(output/f'estimates/seed_{seed}.json', dict(methods=estimates, y_est=extra['y_est'].tolist()))
++                if writer is None:
++                    writer = csv.DictWriter(f, fieldnames=list(rows[0])); writer.writeheader()
++                writer.writerows(rows); f.flush()
++                results.append(result); baseline.extend(checks)
++                write_json(output/'per_repeat.json', results)
++                write_json(output/'baseline.json', baseline)
++                write_json(output/'run_status.json', dict(status='running', completed_repeats=len(results)))
++                if repeat==0:
++                    phase = 'plot'
++                    plot_projection_examples(output, raw, config.camera)
++        phase = 'summary'
++        summary = aggregate(results, baseline)
++        write_json(output/'summary.json', summary)
++        (output/'RESULTS.md').write_text(
++            '# W2 投影与可见性结果\n\n'
++            f"{summary['repeats']}个固定种子，共{summary['candidates']}个候选；可见{summary['visible']}，"
++            f"拒收{summary['rejected']}，原因{summary['reasons']}。最少可见数/种子={summary['min_visible_per_repeat']}。\n\n"
++            f"{summary['baseline_solves']}次PARK/TSAI无噪声恢复通过。剩余候选预测{summary['predicted_candidates']}个，"
++            f"错判{summary['prediction_mismatches']}。投影与OpenCV最大差{summary['max_projection_error_px']}pixel。\n\n"
++            '预测只使用训练估计X_hat/Y_hat，评价端才读取真实Q。当前训练是理想观测，不能外推到像素噪声或粗初值。\n\n'
++            '原始数据保存全部候选而非仅可见者；前20个可见候选只是几何验收训练，不是主动采样性能比较。\n'
++            '图是合成二维投影点，不是相机照片；模型未含畸变、遮挡、真实角点检测、可达性和碰撞。\n', encoding='utf-8')
++        write_json(output/'run_status.json', dict(status='complete', completed_repeats=len(results),
++                                                  candidates=summary['candidates'], baseline_solves=len(baseline)))
++        write_json(output/'artifact_hashes.json', {p.relative_to(output).as_posix():digest(p)
++                                                   for p in sorted(output.rglob('*')) if p.is_file()})
++        return summary
++    except (Exception, KeyboardInterrupt) as exc:
++        (output/'traceback.txt').write_text(traceback.format_exc(), encoding='utf-8')
++        write_json(output/'run_status.json', dict(status='failed', completed_repeats=len(results),
++                   seed=seed, failure_stage=phase, message=f'{type(exc).__name__}: {exc}', traceback_file='traceback.txt'))
++        raise
+--- /dev/null
++++ after/src/handeye/projection_verification.py
+@@ -0,0 +1,54 @@
++"""W2 原始数组、预测、OpenCV重求解与计数核验；不重新筛选种子。"""
++import csv
++import json
++from pathlib import Path
++
++import numpy as np
++
++from .m2_experiments import digest
++from .projection_experiment import ProjectionConfig, aggregate, analyze_candidates, generate_projection_candidates
++
++
++def verify_projection(folder):
++    folder = Path(folder).resolve()
++    def read(name):
++        return json.loads((folder/name).read_text(encoding='utf-8'))
++    def check(condition, message):
++        if not condition:
++            raise ValueError(message)
++    status = read('run_status.json')
++    check(status['status']=='complete', 'W2运行未完成')
++    hashes = read('artifact_hashes.json')
++    files = {p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file()}-{'artifact_hashes.json'}
++    check(set(hashes)==files, 'W2产物清单不同')
++    for name, expected in hashes.items():
++        path = (folder/name).resolve()
++        check(path.is_relative_to(folder), 'W2产物路径越界')
++        check(digest(path)==expected, f'W2哈希不一致: {name}')
++    config = ProjectionConfig.from_dict(read('config.json'))
++    results, baseline, rows = [], [], []
++    for repeat in range(config.repeats):
++        seed = config.seed_start+repeat
++        with np.load(folder/f'raw/seed_{seed}.npz', allow_pickle=False) as data:
++            raw = {k:data[k] for k in ('g','q','points','x_true','y_true')}
++            regenerated = generate_projection_candidates(config, seed)
++            for key in raw:
++                np.testing.assert_array_equal(raw[key], regenerated[key])
++            replay_rows, result, checks, estimates, extra = analyze_candidates(raw, config, seed)
++            for key, value in extra.items():
++                np.testing.assert_array_equal(data[key], value)
++            saved = read(f'estimates/seed_{seed}.json')
++            check(saved==dict(methods=estimates, y_est=extra['y_est'].tolist()), 'W2估计重放不同')
++        results.append(result); baseline.extend(checks); rows.extend(replay_rows)
++    check(read('per_repeat.json')==results, 'W2逐种子结果不同')
++    check(read('baseline.json')==baseline, 'W2基线结果不同')
++    check(read('summary.json')==aggregate(results, baseline), 'W2汇总复算不同')
++    with (folder/'candidates.csv').open(encoding='utf-8', newline='') as f:
++        actual = list(csv.DictReader(f))
++    expected = [{k:str(v) for k,v in row.items()} for row in rows]
++    check(actual==expected, 'W2候选CSV不同或缺失/重复')
++    check(status==dict(status='complete', completed_repeats=config.repeats,
++                       candidates=len(rows), baseline_solves=len(baseline)), 'W2状态计数不一致')
++    return dict(result='PASS', candidates=len(rows), regenerated_repeats=len(results),
++                replayed_baseline_solves=len(baseline), prediction_evaluations=sum(r['predicted_candidates'] for r in results),
++                note='重放不增加独立实验单位；可见性预测只验证理想训练场景')
+--- /dev/null
++++ after/src/handeye/sampling.py
+@@ -0,0 +1,70 @@
++"""只依赖计划机器人位姿的离线选择；不接受相机观测、真值或留出集。"""
++from dataclasses import dataclass
++from numbers import Integral
++
++import numpy as np
++from scipy.spatial.transform import Rotation
++
++from .calibration import pose_stack
++
++STRATEGIES = ('ordered', 'random', 'rotation_farthest')
++
++
++def _integer(value, name):
++    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral) or value < 0:
++        raise ValueError(f'{name} 必须为非负整数')
++    return int(value)
++
++
++def _ids(values, name):
++    try:
++        result = tuple(_integer(x, name) for x in values)
++    except TypeError as exc:
++        raise ValueError(f'{name} 必须为整数序列') from exc
++    if not result or len(set(result)) != len(result):
++        raise ValueError(f'{name} 必须非空且无重复')
++    return result
++
++
++@dataclass(frozen=True)
++class Selection:
++    ids: tuple
++    scores_rad: tuple
++
++
++def select_poses(t_b_g, *, candidate_ids, initial_ids, n_samples, strategy, seed):
++    """返回包含初始样本的有序 ID；短 N 是长 N 的前缀。
++
++    rotation_farthest 最大化到已选姿态的最小主旋转角。
++    分数差 <=1e-12 rad 视为数值并列，选最小 ID。它不保证可辨识性。
++    ordered/random 不使用覆盖分数，日志中以 None 表示未计算。
++    """
++    g = pose_stack(t_b_g, minimum=1)
++    ids, initial = _ids(candidate_ids, 'candidate_ids'), _ids(initial_ids, 'initial_ids')
++    n, seed = _integer(n_samples, 'n_samples'), _integer(seed, 'seed')
++    if len(ids) != len(g) or not set(initial) <= set(ids):
++        raise ValueError('候选 ID 须与位姿一一对应，初始 ID 须属于候选集')
++    if not len(initial) <= n <= len(ids):
++        raise ValueError('n_samples 必须在初始样本数与候选数之间')
++    if strategy not in STRATEGIES:
++        raise ValueError(f'strategy 必须为 {STRATEGIES}')
++    selected, scores = list(initial), [None]*len(initial)
++    remaining = sorted(set(ids)-set(initial))
++    if strategy in ('ordered', 'random'):
++        if strategy == 'random':
++            remaining = np.random.default_rng(seed).permutation(remaining).tolist()
++        selected.extend(remaining[:n-len(initial)])
++        scores.extend([None]*(n-len(initial)))
++    else:
++        index = {value: i for i, value in enumerate(ids)}
++        rotations = g[:, :3, :3]
++        # 一次建立 O(M²) 距离表；评分循环不重复验证/SVD。
++        distances = np.stack([Rotation.from_matrix(r @ rotations.transpose(0, 2, 1)).magnitude()
++                              for r in rotations])
++        while len(selected) < n:
++            values = np.array([min(distances[index[c], index[s]] for s in selected) for c in remaining])
++            best = float(values.max())
++            position = next(i for i, v in enumerate(values) if abs(v-best) <= 1e-12)
++            selected.append(remaining.pop(position))
++            scores.append(float(values[position]))
++    return Selection(tuple(selected), tuple(scores))
+--- /dev/null
++++ after/tests/test_camera.py
+@@ -0,0 +1,79 @@
++"""W2 投影手算、OpenCV交叉参照、视野边界与估计信息接口。"""
++from dataclasses import replace
++import inspect
++
++import cv2
++import numpy as np
++import pytest
++from scipy.spatial.transform import Rotation
++
++from handeye.camera import (Camera, board_grid, project_points, measure_visibility,
++                            predict_visibility, estimate_target_in_base)
++from handeye.transforms import make_transform, rotation_matrix
++from handeye.simulation import generate_dataset
++
++
++def test_known_projection_and_board():
++    camera=Camera()
++    points=np.array([[0.,0.,0.],[.1,.2,0.]])
++    pixels,depths=project_points(points,make_transform(np.eye(3),[0,0,1]),camera)
++    np.testing.assert_allclose(pixels,[[640,480],[730,660]])
++    np.testing.assert_array_equal(depths,[1,1])
++    grid=board_grid()
++    assert grid.shape==(63,3)
++    np.testing.assert_allclose(grid.min(axis=0),[-.1,-.075,0])
++    np.testing.assert_allclose(grid.max(axis=0),[.1,.075,0])
++
++
++def test_projectpoints_opencv_crosscheck():
++    camera=Camera(); q=make_transform(Rotation.from_rotvec([.2,-.3,.1]).as_matrix(),[.1,-.05,.7])
++    points=board_grid(); before=points.copy()
++    actual,_=project_points(points,q,camera)
++    expected,_=cv2.projectPoints(points,Rotation.from_matrix(q[:3,:3]).as_rotvec(),q[:3,3],camera.matrix(),None)
++    np.testing.assert_allclose(actual,expected.reshape(-1,2),atol=1e-10,rtol=0)
++    np.testing.assert_array_equal(points,before)
++
++
++@pytest.mark.parametrize('depth',[-1.,0.,1e-7,1e-6])
++def test_nonpositive_or_near_zero_depth(depth):
++    q=make_transform(np.eye(3),[0,0,depth])
++    assert measure_visibility(q,Camera()).reason=='depth'
++    with pytest.raises(ValueError,match='深度'):
++        project_points([[0.,0.,0.]],q,Camera())
++
++
++def test_exact_image_and_margin_boundaries():
++    camera=Camera(width=100,height=80,fx=1,fy=1,cx=0,cy=0,margin=5)
++    def check(u,v):
++        return measure_visibility(make_transform(np.eye(3),[u,v,1]),camera,points=[[0.,0.,0.]])
++    assert check(5,5).visible and check(94,74).visible
++    assert check(4.999,5).reason=='margin'
++    assert check(99,79).reason=='margin'
++    assert check(99.001,79).reason=='outside_image'
++    assert check(-.001,5).reason=='outside_image'
++
++
++@pytest.mark.parametrize('kwargs',[{'fx':0},{'fy':True},{'width':True},{'height':2.5},{'margin':-1},
++                                  {'margin':480},{'depth_epsilon':0},{'cx':np.nan}])
++def test_bad_camera(kwargs):
++    with pytest.raises(ValueError):
++        replace(Camera(),**kwargs).validate()
++
++
++@pytest.mark.parametrize('points',[[],[[True,False,True]],[[1,2]],[[np.inf,0,1]]])
++def test_bad_projection_points(points):
++    with pytest.raises(ValueError):
++        project_points(points,np.eye(4),Camera())
++
++
++def test_prediction_uses_estimates_and_target_is_fit_from_training():
++    data=generate_dataset(12,seed=42)
++    estimate=estimate_target_in_base(data.t_b_g,data.t_c_t,data.t_g_c_true)
++    np.testing.assert_allclose(estimate,data.t_b_t_true,atol=1e-14)
++    camera=Camera(); x=np.eye(4); g=np.eye(4); y=make_transform(np.eye(3),[0,0,1])
++    assert predict_visibility(g,x,y,camera).visible
++    moved=y.copy(); moved[0,3]=10
++    assert not predict_visibility(g,x,moved,camera).visible
++    assert set(inspect.signature(predict_visibility).parameters)=={'t_b_g','t_g_c_est','t_b_t_est','camera','points'}
++    with pytest.raises(ValueError):
++        estimate_target_in_base(data.t_b_g[:3],data.t_c_t[:4],data.t_g_c_true)
+--- /dev/null
++++ after/tests/test_m2_experiments.py
+@@ -0,0 +1,163 @@
++"""M2 真实求解链、故障落盘、种子配对和独立核验。"""
++from dataclasses import asdict, replace
++import csv
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++
++import numpy as np
++import pytest
++
++import handeye.m2_experiments as m2
++from handeye.calibration import CalibrationError
++from handeye.m2_verification import verify_m2
++
++
++def tiny(**kwargs):
++    values = dict(repeats=2,candidate_count=22,holdout_count=5,sample_counts=(8,),methods=('PARK',),
++                  conditions=(m2.Noise('baseline'),m2.Noise('mixed',.3,.5)),bootstrap_repeats=20,
++                  candidate_seed=410000,holdout_seed=420000,noise_seed=430000,selection_seed=440000,robot_noise_seed=450000)
++    values.update(kwargs)
++    return m2.M2Config(**values)
++
++
++def rows(folder):
++    with (folder/'trials.csv').open(encoding='utf-8',newline='') as f:
++        return list(csv.DictReader(f))
++
++
++@pytest.fixture(scope='module')
++def complete_run(tmp_path_factory):
++    folder=tmp_path_factory.mktemp('m2')/'complete'
++    status=m2.run_m2(tiny(),folder)
++    assert status['completed']==12 and status['failed']==0
++    return folder
++
++
++def test_real_chain_replay_and_no_overwrite(complete_run):
++    result=verify_m2(complete_run)
++    assert result['replayed_successes']==12
++    assert len(list(complete_run.glob('*.png')))==3
++    assert len(list(complete_run.glob('*.pdf')))==3
++    with pytest.raises(FileExistsError):
++        m2.run_m2(tiny(),complete_run)
++    assert all(r['condition']=='baseline' for r in rows(complete_run)[:6])
++
++
++def test_raw_pairing_and_holdout_are_independent(complete_run):
++    with np.load(complete_run/'raw/repeat_000.npz',allow_pickle=False) as d:
++        assert not np.array_equal(d['candidate_g'][:5],d['holdout_g'])
++        np.testing.assert_array_equal(d['camera_standard_noise'],np.random.default_rng(430000).normal(size=(22,6)))
++        raw={k:d[k] for k in d.files}
++    noise=m2.Noise('mixed',.3,.5)
++    g1,q1,_=m2.trial_inputs(raw,{'ids':[0,5,3,8]}, {'n_samples':4},noise)
++    g2,q2,_=m2.trial_inputs(raw,{'ids':[8,3,5,0]}, {'n_samples':4},noise)
++    np.testing.assert_array_equal(q1,q2[::-1])
++    np.testing.assert_array_equal(g1,g2[::-1])
++    np.testing.assert_array_equal(g1,raw['candidate_g'][[0,5,3,8]])
++
++
++def test_tampering_is_rejected(complete_run,tmp_path):
++    copied=tmp_path/'copy'; shutil.copytree(complete_run,copied)
++    with (copied/'trials.csv').open('a',encoding='utf-8') as f:
++        f.write('tampered\n')
++    with pytest.raises(ValueError,match='哈希'):
++        verify_m2(copied)
++
++
++@pytest.mark.parametrize('phase,error', [('solve',NameError),('evaluate',ValueError)])
++def test_unexpected_after_baseline_persists_and_stops(tmp_path,monkeypatch,phase,error):
++    name='calibrate_hand_eye' if phase=='solve' else 'evaluate_estimate'
++    original=getattr(m2,name); calls=0
++    def inject(*args,**kwargs):
++        nonlocal calls
++        calls+=1
++        if calls==7:
++            raise error('M2 injected unexpected')
++        return original(*args,**kwargs)
++    monkeypatch.setattr(m2,name,inject)
++    folder=tmp_path/'unexpected'
++    with pytest.raises(error,match='injected'):
++        m2.run_m2(tiny(),folder)
++    assert calls==7 and len(rows(folder))==7
++    last=rows(folder)[-1]
++    assert last['failure_stage']==phase and last['status']=='error'
++    assert all(last[key]=='' for key in m2.METRICS)
++    assert 'M2 injected unexpected' in (folder/'traceback.txt').read_text(encoding='utf-8')
++    status=json.loads((folder/'run_status.json').read_text(encoding='utf-8'))
++    assert status['status']=='failed' and status['completed']==7
++    assert not (folder/'summary.json').exists() and not list(folder.glob('*.png'))
++
++
++def test_expected_solver_failures_are_counted(tmp_path,monkeypatch):
++    original=m2.calibrate_hand_eye; calls=0
++    def inject(*args,**kwargs):
++        nonlocal calls
++        calls+=1
++        if calls>6:
++            raise CalibrationError('expected rejection')
++        return original(*args,**kwargs)
++    monkeypatch.setattr(m2,'calibrate_hand_eye',inject)
++    folder=tmp_path/'expected'
++    status=m2.run_m2(tiny(),folder)
++    assert status['status']=='complete' and status['failed']==6
++    assert all(r['point_rmse_mm']=='' for r in rows(folder)[6:])
++    assert not (folder/'traceback.txt').exists()
++    assert verify_m2(folder,replay=False)['trials']==12
++
++
++def test_bad_baseline_prevents_noise(tmp_path,monkeypatch):
++    monkeypatch.setattr(m2,'calibrate_hand_eye',lambda *args,**kwargs: np.eye(4))
++    folder=tmp_path/'bad-baseline'
++    with pytest.raises(RuntimeError,match='无噪声'):
++        m2.run_m2(tiny(),folder)
++    assert len(rows(folder))==1
++    assert not json.loads((folder/'baseline_gate.json').read_text(encoding='utf-8'))['passed']
++    assert not (folder/'summary.json').exists()
++
++
++@pytest.mark.parametrize('change', [dict(repeats=True),dict(candidate_count=7),dict(sample_counts=(8,8)),
++    dict(holdout_seed=410000),dict(initial_ids=(0,0)),dict(sample_counts=(False,)),
++    dict(conditions=(m2.Noise('baseline',.1),)),dict(conditions=(m2.Noise('baseline'),m2.Noise('mixed',-1)))])
++def test_invalid_config(change):
++    with pytest.raises(ValueError):
++        tiny(**change).validate()
++
++
++def test_paired_statistics_known_values_and_failures():
++    records=[]
++    for repeat in range(3):
++        for strategy in ('random','rotation_farthest'):
++            records.append(dict(condition='mixed',method='PARK',n_samples=20,repeat=repeat,strategy=strategy,
++                                status='error' if repeat==2 and strategy=='random' else 'ok',
++                                point_rmse_mm=(10 if strategy=='random' else 9)+repeat))
++    result=m2.paired_comparison(records,tiny())
++    assert result['eligible_repeats']==3 and result['paired_success']==2
++    assert result['mean_delta_mm']==-1 and result['ci95_mm']==[-1,-1]
++
++
++def test_selector_receives_only_planned_poses(monkeypatch):
++    original=m2.select_poses; seen=[]
++    def guard(poses,**kwargs):
++        assert isinstance(poses,np.ndarray) and poses.shape==(22,4,4)
++        assert set(kwargs)=={'candidate_ids','initial_ids','n_samples','strategy','seed'}
++        result=original(poses,**kwargs); seen.append(result.ids); return result
++    monkeypatch.setattr(m2,'select_poses',guard)
++    m2.prepare_repeat(tiny(),0)
++    changed=replace(tiny(),scene=m2.SceneConfig(handeye_translation_m=(.7,.2,.4)))
++    m2.prepare_repeat(changed,0)
++    assert seen[:3]==seen[3:]
++
++
++def test_cli_rejects_existing_and_outside_output(complete_run,tmp_path):
++    root=Path(__file__).resolve().parents[1]
++    config=tmp_path/'config.json'; config.write_text(json.dumps(asdict(tiny())),encoding='utf-8')
++    env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',PYTHONIOENCODING='utf8',MPLCONFIGDIR=str(root/'.venv/matplotlib-cache'))
++    for output in (complete_run,root.parent/'M2_FORBIDDEN_TEST_OUTPUT'):
++        result=subprocess.run([sys.executable,str(root/'scripts/run_m2.py'),'--config',str(config),'--output',str(output)],
++                               cwd=root,env=env,capture_output=True,text=True,encoding='utf-8')
++        assert result.returncode!=0
++    assert not (root.parent/'M2_FORBIDDEN_TEST_OUTPUT').exists()
+--- /dev/null
++++ after/tests/test_m2_extensions.py
+@@ -0,0 +1,44 @@
++"""H扩展：机器人测量噪声不重生成相机观测；更大池保留数据前缀。"""
++import numpy as np
++import pytest
++
++from handeye.m2_experiments import M2Config, Noise, perturb_poses, prepare_repeat, trial_inputs
++from handeye.simulation import generate_dataset
++from handeye.transforms import make_transform, rotation_matrix
++
++
++def test_robot_noise_zero_and_independent_geometry():
++    raw,selections=prepare_repeat(M2Config(repeats=2,candidate_count=20,holdout_count=5),0)
++    selected=selections['ordered']; trial={'n_samples':8}
++    g,q,ids=trial_inputs(raw,selected,trial,Noise('baseline'))
++    np.testing.assert_array_equal(g,raw['candidate_g'][ids])
++    np.testing.assert_array_equal(q,raw['candidate_q'][ids])
++    noisy_g,same_q,_=trial_inputs(raw,selected,trial,Noise('robot',robot_rotation_deg=.1,robot_translation_mm=.2))
++    np.testing.assert_array_equal(same_q,q)
++    assert not np.array_equal(noisy_g,g)
++    assert np.max(np.abs(noisy_g@raw['x_true']@same_q-raw['y_true']))>1e-6
++
++
++def test_left_rotation_and_independent_translation_known_case():
++    pose=make_transform(rotation_matrix('x',.3),[1,2,3])[None]
++    z=np.array([[0.,0.,1.,3.,4.,0.]])
++    out=perturb_poses(pose,z,rotation_rad=np.pi/2,translation_m=.001)
++    rz=np.array([[0,-1,0],[1,0,0],[0,0,1]])
++    np.testing.assert_allclose(out[0,:3,:3],rz@pose[0,:3,:3],atol=1e-15)
++    np.testing.assert_allclose(out[0,:3,3],[1.003,2.004,3],atol=1e-15)
++    np.testing.assert_array_equal(pose[0,:3,3],[1,2,3])
++
++
++def test_60_and_120_candidate_and_noise_prefix():
++    a,b=generate_dataset(60,seed=310000),generate_dataset(120,seed=310000)
++    np.testing.assert_array_equal(a.t_b_g,b.t_b_g[:60])
++    np.testing.assert_array_equal(a.t_c_t,b.t_c_t[:60])
++    np.testing.assert_array_equal(np.random.default_rng(330000).normal(size=(60,6)),
++                                  np.random.default_rng(330000).normal(size=(120,6))[:60])
++
++
++@pytest.mark.parametrize('z,sr,st',[(np.zeros((1,5)),0,0),(np.full((1,6),np.nan),0,0),
++                                  (np.zeros((1,6)),-1,0),(np.zeros((1,6)),True,0)])
++def test_invalid_pose_noise(z,sr,st):
++    with pytest.raises(ValueError):
++        perturb_poses(np.eye(4)[None],z,rotation_rad=sr,translation_m=st)
+--- /dev/null
++++ after/tests/test_m2_math.py
+@@ -0,0 +1,101 @@
++"""M2 已知数值、选择信息边界与前缀协议。"""
++import inspect
++
++import numpy as np
++import pytest
++
++from handeye.evaluation import heldout_metrics
++from handeye.sampling import select_poses
++from handeye.simulation import generate_dataset
++from handeye.transforms import make_transform, rotation_matrix
++
++
++def identities(n=3):
++    return np.repeat(np.eye(4)[None], n, axis=0)
++
++
++def test_heldout_truth_and_inputs_unchanged():
++    data = generate_dataset(20, seed=320001)
++    originals = [a.copy() for a in (data.t_b_g, data.t_c_t, data.t_g_c_true, data.t_b_t_true)]
++    result = heldout_metrics(data.t_g_c_true, data.t_b_g, data.t_c_t, data.t_b_t_true)
++    assert result['point_rmse_m'] < 1e-12
++    assert result['point_max_m'] < 1e-12
++    assert len(result['frame_point_rmse_m']) == 20
++    for a, b in zip(originals, (data.t_b_g, data.t_c_t, data.t_g_c_true, data.t_b_t_true)):
++        np.testing.assert_array_equal(a, b)
++
++
++def test_heldout_known_translation_and_rotation():
++    g = q = identities()
++    x = make_transform(np.eye(3), [.003, .004, 0])
++    result = heldout_metrics(x, g, q, np.eye(4), points=[[0, 0, 0], [1, 0, 0]])
++    assert result['point_rmse_m'] == pytest.approx(.005, abs=1e-15)
++    assert result['closure_translation_rmse_m'] == pytest.approx(.005)
++    x = make_transform(rotation_matrix('z', np.pi/2), [0, 0, 0])
++    result = heldout_metrics(x, g, q, np.eye(4), points=[[0, 0, 0], [1, 0, 0]])
++    assert result['point_rmse_m'] == pytest.approx(1.0)
++    assert result['point_max_m'] == pytest.approx(np.sqrt(2))
++    assert result['closure_rotation_rmse_rad'] == pytest.approx(np.pi/2)
++
++
++@pytest.mark.parametrize('points', [[], [[np.nan, 0, 0]], [[True]*3], [[1, 2]], [1, 2, 3], [['1', '2', '3']]])
++def test_heldout_bad_points(points):
++    with pytest.raises(ValueError):
++        heldout_metrics(np.eye(4), identities(), identities(), np.eye(4), points=points)
++
++
++def test_heldout_bad_transforms_or_mismatched_lengths():
++    with pytest.raises(ValueError):
++        heldout_metrics(np.eye(4), identities(3), identities(4), np.eye(4))
++    bad = identities(); bad[0, 0, 0] = -1
++    with pytest.raises(ValueError):
++        heldout_metrics(np.eye(4), bad, identities(), np.eye(4))
++
++
++@pytest.mark.parametrize('strategy', ['ordered', 'random', 'rotation_farthest'])
++def test_selection_deterministic_prefix_ids_and_no_mutation(strategy):
++    poses = generate_dataset(30, seed=410001).t_b_g
++    before = poses.copy()
++    ids = np.arange(100, 130)
++    kwargs = dict(candidate_ids=ids, initial_ids=[101, 103, 104, 106], strategy=strategy, seed=42)
++    long = select_poses(poses, n_samples=20, **kwargs)
++    short = select_poses(poses, n_samples=8, **kwargs)
++    assert long.ids[:8] == short.ids
++    assert long.ids == select_poses(poses, n_samples=20, **kwargs).ids
++    assert len(set(long.ids)) == 20 and set(long.ids) <= set(ids)
++    assert long.ids[:4] == (101, 103, 104, 106)
++    np.testing.assert_array_equal(poses, before)
++
++
++def test_farthest_known_choice_and_numeric_tie():
++    angles = [0, np.pi/6, np.pi/2, -np.pi/2]
++    poses = np.stack([make_transform(rotation_matrix('z', a), [0, 0, 0]) for a in angles])
++    result = select_poses(poses, candidate_ids=[9, 6, 4, 2], initial_ids=[9], n_samples=3,
++                          strategy='rotation_farthest', seed=0)
++    assert result.ids == (9, 2, 4)
++    np.testing.assert_allclose(result.scores_rad[1:], [np.pi/2, np.pi/2])
++
++
++def test_selection_is_invariant_to_base_rotation_and_translations():
++    poses = generate_dataset(25, seed=410002).t_b_g
++    kwargs = dict(candidate_ids=list(range(25)), initial_ids=[0, 1, 2, 3], n_samples=20,
++                  strategy='rotation_farthest', seed=42)
++    changed = make_transform(rotation_matrix('x', .7), [3, 2, 1]) @ poses
++    changed[:, :3, 3] += np.arange(25)[:, None]
++    assert select_poses(poses, **kwargs).ids == select_poses(changed, **kwargs).ids
++    assert set(inspect.signature(select_poses).parameters) == {
++        't_b_g', 'candidate_ids', 'initial_ids', 'n_samples', 'strategy', 'seed'}
++
++
++@pytest.mark.parametrize('override', [
++    {'n_samples':True}, {'n_samples':4.5}, {'n_samples':21}, {'n_samples':2},
++    {'initial_ids':[]}, {'initial_ids':[0, 0]}, {'initial_ids':[21]},
++    {'initial_ids':[False]}, {'candidate_ids':[0]*20}, {'candidate_ids':list(range(19))},
++    {'seed':True}, {'seed':-1}, {'strategy':'oracle'},
++])
++def test_invalid_selection(override):
++    kwargs = dict(candidate_ids=list(range(20)), initial_ids=[0, 1, 2, 3], n_samples=8,
++                  strategy='random', seed=0)
++    kwargs.update(override)
++    with pytest.raises(ValueError):
++        select_poses(identities(20), **kwargs)
+--- /dev/null
++++ after/tests/test_projection_experiment.py
+@@ -0,0 +1,87 @@
++"""W2真实生成/求解/核验链和失败后的原始数据保护。"""
++from dataclasses import asdict
++import json
++from pathlib import Path
++import shutil
++
++import numpy as np
++import pytest
++
++import handeye.projection_experiment as experiment
++from handeye.projection_verification import verify_projection
++
++
++@pytest.fixture(scope='module')
++def completed(tmp_path_factory):
++    folder = tmp_path_factory.mktemp('projection')/'run'
++    config = experiment.ProjectionConfig(repeats=1, seed_start=610000)
++    summary = experiment.run_projection(config, folder)
++    assert summary['candidates']==120 and summary['baseline_solves']==2
++    return folder
++
++
++def test_real_projection_run_replay_and_no_overwrite(completed):
++    result = verify_projection(completed)
++    assert result['replayed_baseline_solves']==2
++    assert result['prediction_evaluations']==100
++    assert len(list(completed.glob('*.png')))==2
++    with pytest.raises(FileExistsError):
++        experiment.run_projection(experiment.ProjectionConfig(repeats=1), completed)
++
++
++def test_unexpected_error_saves_current_seed_data(tmp_path, monkeypatch):
++    def fail(*args, **kwargs):
++        raise NameError('projection injected')
++    monkeypatch.setattr(experiment, 'calibrate_hand_eye', fail)
++    folder = tmp_path/'failed'
++    with pytest.raises(NameError, match='injected'):
++        experiment.run_projection(experiment.ProjectionConfig(repeats=1, seed_start=610000), folder)
++    assert (folder/'raw/seed_610000.npz').is_file()
++    status = json.loads((folder/'run_status.json').read_text(encoding='utf-8'))
++    assert status['status']=='failed' and status['seed']==610000 and status['failure_stage']=='analyze'
++    assert not (folder/'summary.json').exists()
++    assert 'projection injected' in (folder/'traceback.txt').read_text(encoding='utf-8')
++
++
++def test_prediction_interface_does_not_receive_truth(monkeypatch):
++    original = experiment.predict_visibility
++    calls = []
++    def guard(g, x_est, y_est, camera, *, points):
++        assert g.shape==x_est.shape==y_est.shape==(4,4)
++        assert points.shape==(63,3)
++        calls.append(1)
++        return original(g, x_est, y_est, camera, points=points)
++    monkeypatch.setattr(experiment, 'predict_visibility', guard)
++    config = experiment.ProjectionConfig(repeats=1, seed_start=610000)
++    raw = experiment.generate_projection_candidates(config, 610000)
++    experiment.analyze_candidates(raw, config, 610000)
++    assert len(calls)==100
++
++
++def test_hash_tamper_rejected(completed, tmp_path):
++    folder = tmp_path/'copied'; shutil.copytree(completed, folder)
++    (folder/'summary.json').write_text('{}', encoding='utf-8')
++    with pytest.raises(ValueError, match='哈希'):
++        verify_projection(folder)
++
++
++@pytest.mark.parametrize('kwargs', [dict(repeats=True),dict(seed_start=-1),dict(training_count=2),
++    dict(candidate_count=20),dict(camera={}),dict(scene={})])
++def test_bad_projection_config(kwargs):
++    with pytest.raises(ValueError):
++        experiment.ProjectionConfig(**kwargs).validate()
++
++
++def test_board_outside_and_no_replacement_seed(tmp_path, monkeypatch):
++    original = experiment.generate_projection_candidates
++    def outside(config, seed):
++        raw = original(config, seed)
++        raw['q'][:,0,3] = 20
++        # 保持新Q和G几何一致，否则会在闭环检查处提前失败。
++        raw['g'] = np.stack([raw['y_true'] @ np.linalg.inv(q) @ np.linalg.inv(raw['x_true']) for q in raw['q']])
++        return raw
++    monkeypatch.setattr(experiment, 'generate_projection_candidates', outside)
++    folder=tmp_path/'no-visible'
++    with pytest.raises(ValueError, match='可见候选不足'):
++        experiment.run_projection(experiment.ProjectionConfig(repeats=1,seed_start=610000), folder)
++    assert list((folder/'raw').glob('*.npz'))==[folder/'raw/seed_610000.npz']
+--- /dev/null
++++ after/scripts/run_m2.py
+@@ -0,0 +1,26 @@
++"""从项目根目录执行 M2；输出必须为项目内不存在的新目录。"""
++import argparse
++import json
++import os
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT/'src'))
++os.environ.setdefault('MPLCONFIGDIR', str(ROOT/'.venv/matplotlib-cache'))
++from handeye.m2_experiments import M2Config, run_m2  # noqa: E402
++
++
++def main():
++    parser = argparse.ArgumentParser(description='M2 offline sampling experiment')
++    parser.add_argument('--config', type=Path, default=ROOT/'configs/m2_sampling_v0_1.json')
++    parser.add_argument('--output', type=Path, required=True)
++    args = parser.parse_args()
++    if not args.output.resolve().is_relative_to(ROOT):
++        parser.error('输出只能在当前项目目录内')
++    config = M2Config.from_dict(json.loads(args.config.read_text(encoding='utf-8')))
++    print(json.dumps(run_m2(config, args.output), ensure_ascii=False, indent=2))
++
++
++if __name__=='__main__':
++    main()
+--- /dev/null
++++ after/scripts/run_projection.py
+@@ -0,0 +1,26 @@
++"""W2 投影实验CLI，结果只写项目内新目录。"""
++import argparse
++import json
++import os
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT/'src'))
++os.environ.setdefault('MPLCONFIGDIR', str(ROOT/'.venv/matplotlib-cache'))
++from handeye.projection_experiment import ProjectionConfig, run_projection  # noqa: E402
++
++
++def main():
++    parser = argparse.ArgumentParser(description='W2 projection and visibility geometry experiment')
++    parser.add_argument('--config', type=Path, default=ROOT/'configs/w2_projection_v0_1.json')
++    parser.add_argument('--output', type=Path, required=True)
++    args = parser.parse_args()
++    if not args.output.resolve().is_relative_to(ROOT):
++        parser.error('输出只能位于项目内')
++    config = ProjectionConfig.from_dict(json.loads(args.config.read_text(encoding='utf-8')))
++    print(json.dumps(run_projection(config, args.output), ensure_ascii=False, indent=2))
++
++
++if __name__=='__main__':
++    main()
+--- /dev/null
++++ after/scripts/verify_m2.py
+@@ -0,0 +1,33 @@
++"""M2 完整重放；核验报告写到项目内新文件，不能写回被核验目录。"""
++import argparse
++import json
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT/'src'))
++from handeye.m2_verification import compare_runs, verify_m2  # noqa: E402
++
++
++def main():
++    parser=argparse.ArgumentParser()
++    parser.add_argument('--run',type=Path,required=True)
++    parser.add_argument('--compare',type=Path)
++    parser.add_argument('--report',type=Path,required=True)
++    args=parser.parse_args()
++    report=args.report.resolve()
++    if not report.is_relative_to(ROOT) or report.is_relative_to(args.run.resolve()) or (args.compare and report.is_relative_to(args.compare.resolve())):
++        parser.error('核验报告必须在项目内且在实验目录之外')
++    if report.exists():
++        parser.error('核验报告已存在，拒绝覆盖')
++    result={'verification':verify_m2(args.run)}
++    if args.compare:
++        result['second_verification']=verify_m2(args.compare)
++        result['comparison']=compare_runs(args.run,args.compare)
++    with report.open('x',encoding='utf-8') as f:
++        json.dump(result,f,ensure_ascii=False,indent=2)
++    print(json.dumps(result,ensure_ascii=False,indent=2))
++
++
++if __name__=='__main__':
++    main()
+--- /dev/null
++++ after/scripts/verify_projection.py
+@@ -0,0 +1,27 @@
++"""W2核验报告写入项目内新的外部文件，保持实验哈希不变。"""
++import argparse
++import json
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT/'src'))
++from handeye.projection_verification import verify_projection  # noqa: E402
++
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--run', type=Path, required=True)
++    parser.add_argument('--report', type=Path, required=True)
++    args = parser.parse_args()
++    report = args.report.resolve()
++    if not report.is_relative_to(ROOT) or report.is_relative_to(args.run.resolve()) or report.exists():
++        parser.error('报告须位于项目内、实验目录外，且不存在')
++    result = verify_projection(args.run)
++    with report.open('x', encoding='utf-8') as f:
++        json.dump(result, f, ensure_ascii=False, indent=2)
++    print(json.dumps(result, ensure_ascii=False, indent=2))
++
++
++if __name__=='__main__':
++    main()
+--- /dev/null
++++ after/configs/m2_pool120_v0_1.json
+@@ -0,0 +1,84 @@
++{
++  "repeats": 30,
++  "candidate_count": 120,
++  "holdout_count": 20,
++  "sample_counts": [
++    8,
++    12,
++    20
++  ],
++  "initial_ids": [
++    0,
++    1,
++    2,
++    3
++  ],
++  "strategies": [
++    "ordered",
++    "random",
++    "rotation_farthest"
++  ],
++  "methods": [
++    "PARK",
++    "TSAI"
++  ],
++  "candidate_seed": 310000,
++  "holdout_seed": 320000,
++  "noise_seed": 330000,
++  "selection_seed": 340000,
++  "robot_noise_seed": 350000,
++  "bootstrap_seed": 360000,
++  "bootstrap_repeats": 2000,
++  "conditions": [
++    {
++      "name": "baseline",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "rotation",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "translation",
++      "rotation_deg": 0,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "mixed",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    }
++  ],
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.2,
++      -0.15,
++      0.3
++    ],
++    "handeye_translation_m": [
++      0.05,
++      0.02,
++      0.1
++    ],
++    "target_rotvec_rad": [
++      0.0,
++      0.0,
++      0.0
++    ],
++    "target_translation_m": [
++      0.6,
++      0.0,
++      0.3
++    ]
++  }
++}--- /dev/null
++++ after/configs/m2_robot_noise_v0_1.json
+@@ -0,0 +1,84 @@
++{
++  "repeats": 30,
++  "candidate_count": 60,
++  "holdout_count": 20,
++  "sample_counts": [
++    8,
++    12,
++    20
++  ],
++  "initial_ids": [
++    0,
++    1,
++    2,
++    3
++  ],
++  "strategies": [
++    "ordered",
++    "random",
++    "rotation_farthest"
++  ],
++  "methods": [
++    "PARK",
++    "TSAI"
++  ],
++  "candidate_seed": 310000,
++  "holdout_seed": 320000,
++  "noise_seed": 330000,
++  "selection_seed": 340000,
++  "robot_noise_seed": 350000,
++  "bootstrap_seed": 360000,
++  "bootstrap_repeats": 2000,
++  "conditions": [
++    {
++      "name": "baseline",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "rotation",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.1,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "translation",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.2
++    },
++    {
++      "name": "mixed",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.1,
++      "robot_translation_mm": 0.2
++    }
++  ],
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.2,
++      -0.15,
++      0.3
++    ],
++    "handeye_translation_m": [
++      0.05,
++      0.02,
++      0.1
++    ],
++    "target_rotvec_rad": [
++      0.0,
++      0.0,
++      0.0
++    ],
++    "target_translation_m": [
++      0.6,
++      0.0,
++      0.3
++    ]
++  }
++}--- /dev/null
++++ after/configs/m2_sampling_v0_1.json
+@@ -0,0 +1,84 @@
++{
++  "repeats": 30,
++  "candidate_count": 60,
++  "holdout_count": 20,
++  "sample_counts": [
++    8,
++    12,
++    20
++  ],
++  "initial_ids": [
++    0,
++    1,
++    2,
++    3
++  ],
++  "strategies": [
++    "ordered",
++    "random",
++    "rotation_farthest"
++  ],
++  "methods": [
++    "PARK",
++    "TSAI"
++  ],
++  "candidate_seed": 310000,
++  "holdout_seed": 320000,
++  "noise_seed": 330000,
++  "selection_seed": 340000,
++  "robot_noise_seed": 350000,
++  "bootstrap_seed": 360000,
++  "bootstrap_repeats": 2000,
++  "conditions": [
++    {
++      "name": "baseline",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "rotation",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "translation",
++      "rotation_deg": 0,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "mixed",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    }
++  ],
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.2,
++      -0.15,
++      0.3
++    ],
++    "handeye_translation_m": [
++      0.05,
++      0.02,
++      0.1
++    ],
++    "target_rotvec_rad": [
++      0.0,
++      0.0,
++      0.0
++    ],
++    "target_translation_m": [
++      0.6,
++      0.0,
++      0.3
++    ]
++  }
++}--- /dev/null
++++ after/configs/m2_scene2_v0_1.json
+@@ -0,0 +1,84 @@
++{
++  "repeats": 30,
++  "candidate_count": 60,
++  "holdout_count": 20,
++  "sample_counts": [
++    8,
++    12,
++    20
++  ],
++  "initial_ids": [
++    0,
++    1,
++    2,
++    3
++  ],
++  "strategies": [
++    "ordered",
++    "random",
++    "rotation_farthest"
++  ],
++  "methods": [
++    "PARK",
++    "TSAI"
++  ],
++  "candidate_seed": 310000,
++  "holdout_seed": 320000,
++  "noise_seed": 330000,
++  "selection_seed": 340000,
++  "robot_noise_seed": 350000,
++  "bootstrap_seed": 360000,
++  "bootstrap_repeats": 2000,
++  "conditions": [
++    {
++      "name": "baseline",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "rotation",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "translation",
++      "rotation_deg": 0,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "mixed",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    }
++  ],
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.4,
++      0.2,
++      -0.25
++    ],
++    "handeye_translation_m": [
++      0.08,
++      -0.04,
++      0.12
++    ],
++    "target_rotvec_rad": [
++      0.1,
++      -0.2,
++      0.05
++    ],
++    "target_translation_m": [
++      0.45,
++      0.15,
++      0.5
++    ]
++  }
++}--- /dev/null
++++ after/configs/m2_smoke.json
+@@ -0,0 +1,84 @@
++{
++  "repeats": 2,
++  "candidate_count": 60,
++  "holdout_count": 20,
++  "sample_counts": [
++    8,
++    12,
++    20
++  ],
++  "initial_ids": [
++    0,
++    1,
++    2,
++    3
++  ],
++  "strategies": [
++    "ordered",
++    "random",
++    "rotation_farthest"
++  ],
++  "methods": [
++    "PARK",
++    "TSAI"
++  ],
++  "candidate_seed": 410000,
++  "holdout_seed": 420000,
++  "noise_seed": 430000,
++  "selection_seed": 440000,
++  "robot_noise_seed": 450000,
++  "bootstrap_seed": 360000,
++  "bootstrap_repeats": 2000,
++  "conditions": [
++    {
++      "name": "baseline",
++      "rotation_deg": 0.0,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "rotation",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.0,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "translation",
++      "rotation_deg": 0,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    },
++    {
++      "name": "mixed",
++      "rotation_deg": 0.3,
++      "translation_mm": 0.5,
++      "robot_rotation_deg": 0.0,
++      "robot_translation_mm": 0.0
++    }
++  ],
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.2,
++      -0.15,
++      0.3
++    ],
++    "handeye_translation_m": [
++      0.05,
++      0.02,
++      0.1
++    ],
++    "target_rotvec_rad": [
++      0.0,
++      0.0,
++      0.0
++    ],
++    "target_translation_m": [
++      0.6,
++      0.0,
++      0.3
++    ]
++  }
++}--- /dev/null
++++ after/configs/w2_projection_v0_1.json
+@@ -0,0 +1,38 @@
++{
++  "repeats": 30,
++  "seed_start": 510000,
++  "candidate_count": 120,
++  "training_count": 20,
++  "camera": {
++    "width": 1280,
++    "height": 960,
++    "fx": 900.0,
++    "fy": 900.0,
++    "cx": 640.0,
++    "cy": 480.0,
++    "margin": 16.0,
++    "depth_epsilon": 1e-06
++  },
++  "scene": {
++    "handeye_rotvec_rad": [
++      0.2,
++      -0.15,
++      0.3
++    ],
++    "handeye_translation_m": [
++      0.05,
++      0.02,
++      0.1
++    ],
++    "target_rotvec_rad": [
++      0.0,
++      0.0,
++      0.0
++    ],
++    "target_translation_m": [
++      0.6,
++      0.0,
++      0.3
++    ]
++  }
++}--- /dev/null
++++ after/docs/M2_sampling_guide.md
+@@ -0,0 +1,86 @@
++# M2 学习指南：怎样公平比较采样策略
++
++## 1. 从“标定能算出来”到“哪些姿态值得采”
++
++M1 已解决已知真值的仿真、求解与误差计算。M2 问的是：候选机器人姿态相同、可采样数量相同，选择顺序会不会影响估计？代码比较 ordered、random、rotation_farthest。最后一个优先选旋转姿态分散的候选，但它不是最优性保证；只有实验能说明当前场景的实际表现。
++
++## 2. 三个必须分开的角色
++
++生成器知道真实 X=T_G_C 和固定板 Y=T_B_T，用 Q=(G X)^-1 Y 合成观测。选择器只收到计划 G 和 ID。求解器只收到所选的 G/Q 与方法名。评价器在求解结束后才使用真值。
++
++就像做题：出题者知道答案，答题者不能看到答案，阅卷者再对答案。把 SimulationData 整个传给选择器容易意外泄漏信息，所以接口刻意保持狭窄。
++
++## 3. 独立留出到底独立在哪里
++
++每个 repeat 用一个随机流生成 60 帧候选，另一个随机流生成 20 帧留出。两者共享安装与固定板真值，却不是同一序列的训练前缀/后缀。留出帧不能参与选择、求解或调阈值。
++
++使用理想留出观测是为了隔离估计 X 的误差。若留出也加入噪声，测到的将同时包含部署观测噪声，属于另一个问题。留出帧与五个板点不是 100 个独立重复，因为它们共享同一个估计 X。
++
++## 4. 误差为什么要看板上的点
++
++手眼旋转误差的单位是度，平移误差是毫米，两者不能直接相加。旋转误差还会随点到旋转中心的距离转换成不同的位置误差。
++
++对板点 p_T：
++
++```text
++估计点 = G_hold X_hat Q_hold p_T
++真实点 = Y p_T
++点距离 = ||估计点 - 真实点||
++point_RMSE = sqrt(mean(点距离²))
++```
++
++例如所有坐标变换均为单位阵，而估计平移错了 (0.003,0.004,0)m，则每个点距离恰为 0.005m=5mm。绕 z 转错 90°，原点仍不移动，但 (1,0,0)m 的位置误差是 √2m。测试使用这类手算答案检验评价代码。
++
++## 5. 公平对照的四个共同条件
++
++1. 共用候选池和初始 ID `[0,1,2,3]`；初始样本也占预算。
++2. 每个策略先生成到 N=20 的序列，N=8/12 取同一序列前缀，不重新抽样。
++3. 每个候选 ID 有预先生成的标准噪声；选中相同 ID 就收到相同噪声。不能按照选择顺序新抽噪声。
++4. 共用场景、求解器、留出集和预先固定的种子清单。发生失败也保留，不换到更好看的种子。
++
++rotation_farthest 的分数是新姿态到已选姿态的最小 SO(3) 主角度，取分数最大者。差值≤1e-12 rad 视为数值并列，按最小 ID 决定。平移不参与这个简单策略，所以它可能忽略有价值的空间覆盖。
++
++## 6. 如何读统计和图
++
++正式协议每组 30 个 repeat。mean±sample SD 描述重复结果的离散程度，不是均值的置信区间。比较 farthest 与 random 时逐 repeat 相减；负值表示 farthest 的留出点误差更小。bootstrap 只重采样这些 repeat 的差值，不能把 20 帧×5 点当成更多重复。
++
++误差统计条件于成功，必须同时看失败率。两策略只有共同成功的 repeat 才能形成差值，报告会列出配对数。若某策略误差低但失败更多，不能只凭均值判优。初步结果只约束当前配置，不能证明实机精度或创新性。
++
++## 7. 模块与文件入口
++
++| 文件 | 用途 |
++| --- | --- |
++| src/handeye/evaluation.py | 独立留出点误差与分别量化的闭环残差 |
++| src/handeye/sampling.py | 仅用计划机器人姿态进行三种选择 |
++| src/handeye/m2_experiments.py | 协议、随机流、无噪声关卡、失败落盘、统计 |
++| src/handeye/m2_plotting.py | 从保存的 JSON 统计生成 PNG/PDF |
++| src/handeye/m2_verification.py | 哈希、选择、计数、统计复算和实际求解重放 |
++| scripts/run_m2.py、scripts/verify_m2.py | 项目内命令入口，拒绝覆盖旧产物 |
++| configs/m2_sampling_v0_1.json | 正式 30 重复协议；开发配置为 m2_smoke.json |
++
++## 8. 如何实际运行
++
++在 PowerShell 项目根目录中：
++
++```powershell
++$env:PYTHONDONTWRITEBYTECODE='1'
++$env:PYTHONIOENCODING='utf8'
++$env:MPLCONFIGDIR="$PWD\.venv\matplotlib-cache"
++.\.venv\Scripts\python.exe -W error -m pytest -q -p no:cacheprovider --basetemp=.venv\my-M2-test-temp
++.\.venv\Scripts\python.exe scripts\run_m2.py --config configs\m2_smoke.json --output experiments\M2_my_smoke
++.\.venv\Scripts\python.exe scripts\verify_m2.py --run experiments\M2_my_smoke --report reports\M2_my_verification.json
++```
++
++运行目录、核验报告必须不存在，重跑时换新名字。pytest 的 basetemp 只用于本次测试，不填真实数据目录。正式实验将 config 换成 m2_sampling_v0_1.json。恢复同一目录的部分运行尚未实现；中断后保留旧目录，并核对状态后在新目录重跑，不能混合不同代码版本。
++
++配置/种子/代码指纹与逐次结果一同保存。核验报告放在实验目录之外，因为产物哈希清单应保持固定。需要跨进程比较时加 `--compare experiments\另一个同配置运行目录`。
++
++## 9. 理解题与答案
++
++1. **为什么 30 个 repeat 各 100 个留出点，不能说有 3000 次独立标定？** 每个 repeat 只求得一个 X，内部点误差相关，独立重复数仍为 30。
++2. **为什么不能用真实 X 算每个候选的预期精度，再让策略选择？** 那会将只有仿真评价器知道的答案泄漏给策略，不能代表未知安装下的实际选择能力。
++3. **N=8 和 N=20 为什么要用同一选择序列？** 控制样本来源，较小集合是较大集合的前缀，可以观察增加样本的配对变化。
++4. **覆盖分数增加但标定误差变大是否一定是 Bug？** 不是；覆盖分数是启发式代理，噪声和几何都会影响最终误差，应先查计算与公平性，再保留负结果。
++5. **怎样正确研究机器人位姿测量噪声？** 用真实 G 生成 Q，再给测量 G 加独立噪声；若用带噪 G 重生成 Q，会人为恢复闭环并抵消要研究的误差。
++
++当前 M2 是位姿级仿真，不能保证板可见、姿态可达或运动无碰撞；像素/PnP 研究是后续独立阶段。
+--- /dev/null
++++ after/docs/PROJECT_SPEC.md
+@@ -0,0 +1,51 @@
++# 项目数学与数据规范
++
++版本 M2-0.1；整理日期 2026-11-23。本文整理 AGENTS、eye_in_hand_frames、learning_guide 及用户 M1/M2 任务书中已经明确的约定，不改变既有数学实现。
++
++## 坐标与单位
++
++T_A_B 将 B 系坐标变到 A 系：p_A=R_A_B p_B+t_A_B。右手系、列向量；点数组按行存储不改变数学方向。内部米和弧度，报告边界显式换为 mm、°。G 与早期 E 均指末端，C 为相机光学系（x右、y下、z前），B 为基座，T 为固定板。
++
++```text
++G_i=T_B_G,i; X=T_G_C; Q_i=T_C_T,i; Y=T_B_T
++G_i X Q_i=Y; Q_i=inverse(G_i X) Y
++A_ij=inverse(G_j) G_i; B_ij=Q_j inverse(Q_i)
++A_ij X=X B_ij
++```
++
++OpenCV calibrateHandEye 的 gripper2base 对应 G、target2cam 对应 Q，cam2gripper 输出 X；传入绝对位姿，不是相对运动。真实 X/Y 只出现在生成和事后评价；选择器与求解器不得接收真值容器。原无噪声门槛 e_R<1e-6 rad、e_t<1e-6 m；理想闭环最大元素残差<1e-12。
++
++通用 motion_diagnostics 对输入序列计算 inverse(P_j)P_i；将 Q 输入它不等于直接使用 AX=XB 中的 B_ij。未经证明不得假定两侧全部数值诊断完全相同，现有双检查和阈值保持。
++
++## M2 数据与实验单位
++
++- 每次独立重复有候选池与独立种子的留出集；共用同一场景 X/Y，默认留出为理想观测。
++- candidate_ids 是候选数组行的唯一整数标签；initial_ids 为共同初始标签，计入 N；selection.ids 为完整有序采样序列，各 N 取其前缀。
++- 同一候选 ID 在所有策略下使用相同观测和噪声；先生成全候选标准正态表，再按 ID 索引。留出数据不得用于选择或调参。
++- 候选/留出/相机噪声/选择随机流各自固定并记录。正式默认种子分别 310000+i、320000+i、330000+i、340000+i，i=0…29；开发使用分离的 410000 系列。
++- 一个重复编号是统计单位；共享估计的帧、板点、帧对和 N 前缀不算独立重复。重放也不增加样本数。
++- 三策略仅比较计划姿态的选择；不包含视野、可达性、碰撞或运动时间保证。rotation_farthest 是启发式，不是信息最优算法。
++
++## 噪声与评价
++
++相机 R'=Exp(δθ)R、t'=t+δt，噪声表达在 C 系，旋转和平移独立，每分量标准差为 sigma；不是对整个 SE(3) 左乘同一误差变换。机器人噪声扩展在真实 G 生成 Q 之后独立施加到测量 G，噪声表达在 B 系，不用带噪 G 重生成 Q。
++
++手眼误差使用 R_hat R_true^T 的主角度和 ||t_hat-t_true||。独立留出点误差比较 G_h X_hat Q_h p_T 与 Y p_T，对全部帧/点平方距离平均后开方。闭环旋转和平移残差分别报告，不能混合单位相加。
++
++## M2 输出协议
++
++每个运行使用新目录：config/environment/code_hashes/trial_plan/run_status JSON；raw/repeat_*.npz 保存候选、理想 Q、标准噪声、理想留出、点、真值；selections.json 保存选择顺序和分数；estimates/ 保存估计与逐帧评价；trials.csv 保存逐次结果；summary/paired JSON 与 CSV、PNG/PDF 及哈希清单供核验。
++
++CSV 的 trial_id 唯一且对应冻结计划；repeat 是独立重复编号；condition 是噪声条件；strategy/method/N 指明比较组；*_seed 为随机种子；rotation_sigma_deg、translation_sigma_mm 是相机分量 sigma；robot_* 为独立机器人 sigma；error_deg、error_mm、point_*_mm、closure_* 指标注明物理单位；closure_max_abs 是本次所选理想 G/Q 的矩阵元素最大残差，仅用于生成核查。selection_seconds 和 solve_seconds 是本机运行时间，不是机器人采集耗时。
++
++成功 status=ok，预期数据/求解拒收 status=error 且数值误差留空；意外程序异常保存当前行、traceback，运行 failed 并停止。完整运行可包含预期失败，但必须同时报告失败数。无噪声任一失败停止后续比较。中断只保留 partial/running 证据，不冒充完整；续跑需配置/代码指纹和 trial 唯一性核验，否则建立新运行。
++
++统计报告成功条件下分布及总数/失败率。配对比较披露共同成功的重复数；bootstrap 按重复编号重采样，不按点重采样。既有 M1 产物和数据格式不追溯更改。
++
++## W2 零畸变投影补充（2026-11-23）
++
++相机点由T_C_T得到，u=fx X/Z+cx、v=fy Y/Z+cy。长度米，像素坐标pixel；默认图像1280×960、fx=fy=900、cx=640、cy=480。板9×7点、间距0.025m、中心原点，边界覆盖x±0.10m/y±0.075m。当前零畸变，无厚度双面几何模型，无真实图像检测。
++
++可见性先检查所有规定点Z>1e-6m，再检查像素中心画面[0,width-1]×[0,height-1]及16pixel余量；端点包含。首要拒收原因依次为depth、outside_image、margin。不得将非法深度直接除法投影。
++
++测量端使用实际Q；预测端仅使用候选G、训练得到的X_hat/Y_hat，计算Q_hat=inverse(G X_hat)Y_hat。Y_hat取训练闭环旋转的极分解均值及平移均值；病态/不唯一旋转均值拒绝。训练筛可见协议属于几何验收，不能当作有限预算自主采样收益证据。
+--- /dev/null
++++ after/docs/W2_projection_guide.md
+@@ -0,0 +1,74 @@
++# W2 学习指南：板上的点怎样落到画面里
++
++W2 已实现零畸变针孔投影和可见性判定。它把板上63个已知三维点变成合成像素坐标；没有渲染照片或检测真实角点。
++
++## 1. 公式与单位
++
++板点先用 Q=T_C_T 变到相机系：p_C=R_C_T p_T+t_C_T。相机系 x 向右、y 向下、z 向前。只有 Z_C>1e-6m 才投影：
++
++```text
++u = fx * X_C / Z_C + cx
++v = fy * Y_C / Z_C + cy
++```
++
++三维坐标用米；焦距fx/fy和主点cx/cy用pixel。默认1280×960图像、fx=fy=900、cx=640、cy=480、零畸变。这些是实验设定，不是设备测量值。例如相机点(0.1,0.2,1)m投到(730,660)pixel。
++
++板点以中心为原点，x为-0.10…0.10m、y为-0.075…0.075m，步长0.025m，共9×7点。检查整个网格也包含其矩形四角；该矩形不代表未知实物边框。
++
++## 2. 什么叫可见
++
++按顺序返回一个首要原因：
++
++1. `depth`：任一点深度≤1e-6m，不做除法。
++2. `outside_image`：点超出像素中心范围[0,1279]×[0,959]。
++3. `margin`：点虽在画面内，却进入默认16pixel边缘余量。
++4. `visible`：所有规定点通过上述检查。
++
++边界包含端点；例如余量内有效区域为[16,1263]×[16,943]。函数不会静默把负深度点投到图像中。模型不检查遮挡、正反面纹理、模糊、检测置信度、机器人可达性和碰撞。
++
++## 3. 测量端与规划端有什么不同
++
++`measure_visibility(Q, camera)` 在仿真测量端用真实观测Q判定当前几何。`predict_visibility(G, X_hat, Y_hat, camera)` 在规划端只用候选机器人位姿和已有估计，按 Q_hat=inverse(G X_hat)Y_hat 预测；接口不接收真实Q或真值对象。
++
++X_hat由共同训练G/Q实际调用OpenCV求得，Y_hat由训练中的G X_hat Q估计。旋转使用训练闭环旋转矩阵均值的极分解，平移取算术均值；病态或不唯一的旋转均值拒绝。没有将固定板真值直接传给预测器。
++
++正式验收用每个种子的前20个可见候选训练，剩余100个候选评价预测。这个训练集合由仿真测量端筛选，是几何验证协议，不能称为未知可见性下的自主采样实验。
++
++## 4. 实际结果和解释边界
++
++30个固定种子各120候选：1941可见，1542画面外，117进入边缘余量；每种子最少55个可见。60次PARK/TSAI无噪声恢复全部通过，3000个剩余候选预测无错判。全部候选保存，不以重抽种子筛出成功场景。
++
++零错判发生在理想训练观测下，X_hat/Y_hat几乎等于真实关系。它主要验证坐标方向、预测接口与边界实现，不能证明有像素噪声或较大初值偏差时仍准确。
++
++官方投影说明见 [OpenCV文档](https://docs.opencv.org/4.13.0/d9/d0c/group__calib3d.html)。网页4.13.0与本机cv2 5.1.0版本不同，本轮同时保存了本机projectPoints文档，并实际对照数值；最大差约4.55e-13pixel。
++
++## 5. 使用和文件入口
++
++| 文件 | 用途 |
++| --- | --- |
++| src/handeye/camera.py | 相机参数、板点、投影、测量/预测可见性、训练估计固定板位姿 |
++| src/handeye/projection_experiment.py | 固定种子候选生成、训练恢复、预测评价、逐种子落盘和示意图 |
++| src/handeye/projection_verification.py | 哈希、再生成、原始数据重放、CSV/计数/统计复算 |
++| scripts/run_projection.py、verify_projection.py | 真实命令行入口 |
++| configs/w2_projection_v0_1.json | 正式30种子配置；候选分布写于预设协议及生成器 |
++| experiments/W2_projection_20261123/ | 已完成的正式数据、图、结果和哈希 |
++
++PowerShell项目根目录：
++
++```powershell
++$env:PYTHONDONTWRITEBYTECODE='1'
++$env:PYTHONIOENCODING='utf8'
++$env:MPLCONFIGDIR="$PWD\.venv\matplotlib-cache"
++.\.venv\Scripts\python.exe scripts\run_projection.py --config configs\w2_projection_v0_1.json --output experiments\W2_my_run
++.\.venv\Scripts\python.exe scripts\verify_projection.py --run experiments\W2_my_run --report reports\W2_my_verification.json
++```
++
++目录和报告须为新名字。实验失败会保存原始候选、当前seed、阶段与traceback；保留失败目录并换新目录重跑，不清空旧数据。完整测试命令与最终日志见验收报告。
++
++## 6. 理解题
++
++1. **米改成毫米后，能否只改板点？** 不能，所有相关平移和点坐标须统一；否则投影与闭环都会错误。
++2. **点投到画面内就代表真实检测成功吗？** 只代表这个几何模型通过；遮挡、纹理、畸变和检测质量尚未建模。
++3. **为什么规划端不能读取实际Q？** 它对应尚未采集的观测；提前读取会使选位策略获得未来信息。
++4. **为什么零错判不能直接推广到实机？** 训练没有像素噪声或系统误差，估计几乎精确；真实环境需要W3和后续不确定性实验。
++5. **怎样验证T_C_T没有用反？** 用手算点对照投影，检查G X Q=Y，并验证OpenCV无噪声恢复；单看矩阵是否正交不足以识别方向。
+--- before/plans/progress.json
++++ after/plans/progress.json
+@@ -4,12 +4,12 @@
+   "timezone": "Asia/Shanghai",
+   "project_root": "D:\\Research\\Robot-auto-calibration",
+   "updated_date": "2026-11-23",
+-  "current_scope": "planning_only",
++  "current_scope": "M2_and_W2_complete",
+   "planning_complete": true,
+-  "development_started": false,
+-  "current_task": "W1",
+-  "last_completed_checkpoint": "Plan files created; current M1 baseline verified: 143 tests passed",
+-  "next_action": "On user execution request, read TONIGHT_M2_20261123.md and start stage A with a fresh Git/environment check",
++  "development_started": true,
++  "current_task": "W3",
++  "last_completed_checkpoint": "M2 A-G, H1-H3, H4/W2 accepted; 226 tests; 8700 formal solves and replays passed",
++  "next_action": "Read W3 runbook, freeze pixel/PnP protocol, implement and validate noiseless PnP chain before noise",
+   "current_run_directory": null,
+   "baseline": {
+     "branch": "fix/m1-review-20261119",
+@@ -24,13 +24,86 @@
+     "note": "These are current planning checks; no W1-W7 development or formal experiment has been executed in this planning turn"
+   },
+   "tasks": [
+-    {"id": "W1", "planned_date": "2026-11-23", "title": "M2 offline sampling and held-out evaluation", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W2", "planned_date": "2026-11-24", "title": "Projection and visibility", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W3", "planned_date": "2026-11-25", "title": "Pixel observations and PnP calibration loop", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W4", "planned_date": "2026-11-26", "title": "Budgeted sequential sampling", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W5", "planned_date": "2026-11-27", "title": "Robustness and ablations", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W6", "planned_date": "2026-11-28", "title": "Reproduction and review preparation", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []},
+-    {"id": "W7", "planned_date": "2026-11-29", "title": "Weekly delivery and learning materials", "status": "not_started", "last_stage": null, "evidence": [], "blockers": []}
++    {
++      "id": "W1",
++      "planned_date": "2026-11-23",
++      "title": "M2 offline sampling and held-out evaluation",
++      "status": "done",
++      "last_stage": "G",
++      "evidence": [
++        "reports/M2_evidence_20261123/baseline.txt",
++        "reports/M2_evidence_20261123/math_green.txt",
++        "docs/PROJECT_SPEC.md",
++        "reports/M2_review_followup_20261123.md",
++        "reports/M2_evidence_20261123/integration_green.txt",
++        "reports/M2_evidence_20261123/smoke_verification.json",
++        "reports/M2_development_report_20261123.md",
++        "reports/M2_evidence_20261123/formal_verification.json",
++        "reports/M2_evidence_20261123/full_core.txt"
++      ],
++      "blockers": []
++    },
++    {
++      "id": "W2",
++      "planned_date": "2026-11-24",
++      "title": "Projection and visibility",
++      "status": "done",
++      "last_stage": "accepted",
++      "evidence": [
++        "reports/W2_protocol_20261123.md",
++        "reports/W2_evidence_20261123/integration.txt",
++        "reports/W2_development_report_20261123.md",
++        "reports/W2_evidence_20261123/formal_verification.json",
++        "reports/W2_evidence_20261123/independent_numeric_audit.json",
++        "reports/W2_evidence_20261123/full_final.txt"
++      ],
++      "blockers": []
++    },
++    {
++      "id": "W3",
++      "planned_date": "2026-11-25",
++      "title": "Pixel observations and PnP calibration loop",
++      "status": "not_started",
++      "last_stage": null,
++      "evidence": [],
++      "blockers": []
++    },
++    {
++      "id": "W4",
++      "planned_date": "2026-11-26",
++      "title": "Budgeted sequential sampling",
++      "status": "not_started",
++      "last_stage": null,
++      "evidence": [],
++      "blockers": []
++    },
++    {
++      "id": "W5",
++      "planned_date": "2026-11-27",
++      "title": "Robustness and ablations",
++      "status": "not_started",
++      "last_stage": null,
++      "evidence": [],
++      "blockers": []
++    },
++    {
++      "id": "W6",
++      "planned_date": "2026-11-28",
++      "title": "Reproduction and review preparation",
++      "status": "not_started",
++      "last_stage": null,
++      "evidence": [],
++      "blockers": []
++    },
++    {
++      "id": "W7",
++      "planned_date": "2026-11-29",
++      "title": "Weekly delivery and learning materials",
++      "status": "not_started",
++      "last_stage": null,
++      "evidence": [],
++      "blockers": []
++    }
+   ],
+   "pending_decisions": [],
+   "notes": [
+@@ -38,5 +111,38 @@
+     "Verify evidence before marking a task done",
+     "Account quota is not visible; no promise to exhaust it or run after the active session ends",
+     "Preserve existing dirty Git state and other agents' work; no automatic commits or uploads"
+-  ]
+-}
++  ],
++  "extension_tasks": [
++    {
++      "id": "M2_H1",
++      "status": "done",
++      "evidence": "reports/M2_evidence_20261123/robot_noise_verification.json"
++    },
++    {
++      "id": "M2_H2",
++      "status": "done",
++      "evidence": "reports/M2_evidence_20261123/scene2_verification.json"
++    },
++    {
++      "id": "M2_H3",
++      "status": "done",
++      "evidence": "reports/M2_evidence_20261123/pool120_verification.json"
++    },
++    {
++      "id": "M2_H4",
++      "status": "done",
++      "evidence": "reports/W2_development_report_20261123.md"
++    }
++  ],
++  "latest_validation": {
++    "pytest_passed": 226,
++    "failed": 0,
++    "errors": 0,
++    "skipped": 0,
++    "seconds": 17.11,
++    "formal_m2_solves": 8640,
++    "formal_W2_solves": 60,
++    "formal_unrun": 0,
++    "note": "Settings/replays not pooled as independent replicates"
++  }
++}--- before/README.md
++++ after/README.md
+@@ -1,4 +1,9 @@
+ # 机器人自动手眼标定
++
++**当前交付：M2必做及三项扩展、W2投影与可见性均已完成。** 查看 [本轮总报告](reports/M2_tonight_completion_20261123.md)、[W2报告](reports/W2_development_report_20261123.md)、[W2使用指南](docs/W2_projection_guide.md)。后续W3/PnP尚未实施，实际状态见 [progress](plans/progress.json)。
++
++**2026-11-23 当前入口：M2 离线采样与独立留出评价已通过必做验收。**
++查看 [M2开发报告](reports/M2_development_report_20261123.md)、[M2学习指南](docs/M2_sampling_guide.md)、[数学规范](docs/PROJECT_SPEC.md) 与 [周计划进度](plans/progress.json)。后续扩展以进度和对应报告为准。下面的初始化/M1段落保留为历史记录。
+ 
+ 机械专业本科生大创项目，基于 Python 和 OpenCV，先开展 Eye-in-Hand（相机安装在机器人末端）算法仿真，再研究自动采样与位姿规划。
+ 
+--- before/AGENTS.md
++++ after/AGENTS.md
+@@ -44,3 +44,17 @@
+ - 不覆盖research_output/的文献或reviews/的独立审查产物。
+ - 默认30个配对种子，重跑/重放不算新增独立样本；图误差棒为样本SD。
+ - 不依赖硬件、GUI或付费API，不提权；下一阶段按用户明确任务继续。
++
++## M2 当前授权与数据约定（2026-11-23）
++
++用户已启动 plans/TONIGHT_M2_20261123.md，要求每阶段落盘，必做验收后继续H扩展。当前规范入口 docs/PROJECT_SPEC.md，实际状态见 plans/progress.json。旧阶段描述保留为历史。
++
++- 选择器仅接收计划T_B_G与ID，不接收Q、真值、留出或未来观测；真值只用于生成与评价。
++- 初始ID计入预算，各N取同一选择序列前缀；噪声按候选ID共享，独立留出另设种子。
++- 正式协议先冻结，无噪声全部通过才进入噪声比较；配对单位为repeat，重放不增加独立样本数。
++- M2结果与M1分开保存，核验报告放在实验目录之外；不原地清空或混合续跑不同代码版本。
++- 当前授权不包含硬件、GUI、系统设置、自动提交、上传或改写他人审查/文献。
++
++## W2 投影阶段补充
++
++M2任务H4已推进到W2。测量端的真实Q与规划预测端的X_hat/Y_hat必须分开；理想训练零错判不代表噪声或粗初值下保证。投影输出pixel，几何输入米；深度/画面/余量拒收原因保留。入口docs/W2_projection_guide.md，W3/PnP按后续任务继续。

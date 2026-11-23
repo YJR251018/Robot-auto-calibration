@@ -1,0 +1,89 @@
+{
+  "result": "PASS",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "output": "git version 2.54.0.windows.1\n"
+    },
+    {
+      "command": [
+        "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+        "--version"
+      ],
+      "exit_code": 0,
+      "output": "Python 3.12.0\n"
+    },
+    {
+      "command": [
+        "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found.\n"
+    },
+    {
+      "command": [
+        "D:\\Research\\Robot-auto-calibration\\.venv\\Scripts\\python.exe",
+        "-W",
+        "error",
+        "examples/basic_transforms.py"
+      ],
+      "exit_code": 0,
+      "output": "T_B_C (C -> B; translation in metres):\n [[ 0.  -1.   0.   1. ]\n [ 1.   0.   0.   2.1]\n [ 0.   0.   1.   0.2]\n [ 0.   0.   0.   1. ]]\npoint_C: [1. 0. 0.]\npoint_B: [1.  3.1 0.2]\nrecovered_C: [1. 0. 0.]\nKnown-value and round-trip checks: PASS\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": "warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'requirements.txt', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "-c",
+        "core.quotepath=false",
+        "status",
+        "--short"
+      ],
+      "exit_code": 0,
+      "output": " M .gitignore\n M README.md\n D first_handeye_experiment.py\n M requirements.txt\n D robot_calibration/__init__.py\n D robot_calibration/__main__.py\n D robot_calibration/app.py\n D robot_calibration/calibration.py\n D robot_calibration/data.py\n D robot_calibration/demo.py\n D robot_calibration/experiment.py\n D robot_calibration/geometry.py\n D robot_calibration/sampling.py\n D tests/test_calibration.py\n D tests/test_workbench.py\n D 任务回顾.md\n D 阶段0_手眼标定开源项目调研.md\n D 项目总路线.md\n?? AGENTS.md\n?? \"CONTINUE WORK.md\"\n?? INITIALIZATION.md\n?? configs/\n?? docs/\n?? examples/\n?? experiments/\n?? pytest.ini\n?? reports/\n?? requirements-lock.txt\n?? research_output/\n?? reviews/\n?? scripts/\n?? src/\n?? tests/test_environment.py\n?? tests/test_m1.py\n?? tests/test_transforms.py\n?? 基于视觉的机器人手眼自动标定方法研究_广东工业大学创新训练项目申报书.docx\n?? 文献/\n"
+    }
+  ],
+  "local_links": [
+    {
+      "source": "README.md",
+      "target": "reports/tonight_report.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "reports/M1_development_report.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "docs/learning_guide.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "experiments/M1_v0_1/RESULTS.md",
+      "exists": true
+    }
+  ],
+  "figure_review": "All three actual PNGs inspected; labels readable; translation-only rotation residual is numerical floor."
+}

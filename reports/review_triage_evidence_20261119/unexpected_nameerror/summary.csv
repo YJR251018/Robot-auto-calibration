@@ -1,0 +1,5 @@
+experiment,condition,method,n_samples,rotation_sigma_deg,translation_sigma_mm,total,succeeded,failed,failure_rate,rotation_error_deg_mean,rotation_error_deg_std,rotation_error_deg_median,rotation_error_deg_q25,rotation_error_deg_q75,rotation_error_deg_max,translation_error_mm_mean,translation_error_mm_std,translation_error_mm_median,translation_error_mm_q25,translation_error_mm_q75,translation_error_mm_max
+baseline,clean,PARK,20,0.0,0.0,2,2,0,0.0,1.3004580562302925e-14,3.750726041633974e-15,1.3004580562302925e-14,1.1678498653096744e-14,1.4330662471509103e-14,1.5656744380715284e-14,1.223286638869777e-13,6.996153793482095e-14,1.223286638869777e-13,9.75935249390018e-14,1.4706380283495357e-13,1.7179894178292947e-13
+rotation_noise,r00,PARK,20,0.1,0.0,2,0,2,1.0,,,,,,,,,,,,
+translation_noise,t00,PARK,20,0.0,0.5,2,0,2,1.0,,,,,,,,,,,,
+sample_count,n008,PARK,8,0.3,0.5,2,0,2,1.0,,,,,,,,,,,,

@@ -1,0 +1,20 @@
+{
+  "verification": {
+    "result": "PASS",
+    "trials": 144,
+    "replayed_successes": 144,
+    "raw_datasets": 2,
+    "note": "重放不增加独立重复数；失败试次保留，未伪称成功重放"
+  },
+  "second_verification": {
+    "result": "PASS",
+    "trials": 144,
+    "replayed_successes": 144,
+    "raw_datasets": 2,
+    "note": "重放不增加独立重复数；失败试次保留，未伪称成功重放"
+  },
+  "comparison": {
+    "result": "PASS",
+    "identical_trials": 144
+  }
+}

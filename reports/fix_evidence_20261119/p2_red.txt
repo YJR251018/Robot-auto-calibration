@@ -1,0 +1,236 @@
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+________________ test_logged_closure_uses_actual_ideal_prefix _________________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_logged_closure_uses_actua0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002E2409F50A0>
+
+    def test_logged_closure_uses_actual_ideal_prefix(tmp_path, monkeypatch):
+        checked_lengths = []
+        real = experiments.closure_error
+    
+        def observe_length(data):
+            checked_lengths.append(len(data.t_b_g))
+            return real(data)
+    
+        monkeypatch.setattr(experiments, "closure_error", observe_length)
+        folder = tmp_path / "prefix"
+        run_experiment(config(methods=("PARK",), seed_start=20261121), folder)
+>       assert checked_lengths[-2:] == [8, 8]
+E       assert [20, 20] == [8, 8]
+E         
+E         At index 0 diff: 20 != 8
+E         Use -v to get more diff
+
+tests\test_review_fixes.py:142: AssertionError
+_ test_plot_missing_experiment_is_explicit_and_creates_no_figures[rotation_noise] _
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_experiment_i0')
+missing = 'rotation_noise'
+
+    @pytest.mark.parametrize("missing", ["rotation_noise", "translation_noise", "sample_count", "all"])
+    def test_plot_missing_experiment_is_explicit_and_creates_no_figures(tmp_path, missing):
+        table = tmp_path / "missing.csv"
+        write_plot_input(table, missing_experiment=missing)
+        original = set(plt.get_fignums())
+        with pytest.raises(ValueError, match="缺少.*(实验类型|必需列)"):
+>           plot_results(table, tmp_path)
+
+tests\test_review_fixes.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\handeye\plotting.py:43: in plot_results
+    subtitle = f"N={rows_for(rows,experiment,'n_samples')}; other noise component = 0"
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+rows = [{'experiment': 'baseline', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}, {'experiment': 'tr...g': '0.1', ...}, {'experiment': 'sample_count', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}]
+experiment = 'rotation_noise', key = 'n_samples'
+
+    def rows_for(rows, experiment, key):
+>       return next(r[key] for r in rows if r["experiment"] == experiment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+src\handeye\plotting.py:53: StopIteration
+_ test_plot_missing_experiment_is_explicit_and_creates_no_figures[translation_noise] _
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_experiment_i1')
+missing = 'translation_noise'
+
+    @pytest.mark.parametrize("missing", ["rotation_noise", "translation_noise", "sample_count", "all"])
+    def test_plot_missing_experiment_is_explicit_and_creates_no_figures(tmp_path, missing):
+        table = tmp_path / "missing.csv"
+        write_plot_input(table, missing_experiment=missing)
+        original = set(plt.get_fignums())
+        with pytest.raises(ValueError, match="缺少.*(实验类型|必需列)"):
+>           plot_results(table, tmp_path)
+
+tests\test_review_fixes.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\handeye\plotting.py:43: in plot_results
+    subtitle = f"N={rows_for(rows,experiment,'n_samples')}; other noise component = 0"
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+rows = [{'experiment': 'baseline', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}, {'experiment': 'ro...g': '0.1', ...}, {'experiment': 'sample_count', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}]
+experiment = 'translation_noise', key = 'n_samples'
+
+    def rows_for(rows, experiment, key):
+>       return next(r[key] for r in rows if r["experiment"] == experiment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+src\handeye\plotting.py:53: StopIteration
+_ test_plot_missing_experiment_is_explicit_and_creates_no_figures[sample_count] _
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_experiment_i2')
+missing = 'sample_count'
+
+    @pytest.mark.parametrize("missing", ["rotation_noise", "translation_noise", "sample_count", "all"])
+    def test_plot_missing_experiment_is_explicit_and_creates_no_figures(tmp_path, missing):
+        table = tmp_path / "missing.csv"
+        write_plot_input(table, missing_experiment=missing)
+        original = set(plt.get_fignums())
+        with pytest.raises(ValueError, match="缺少.*(实验类型|必需列)"):
+>           plot_results(table, tmp_path)
+
+tests\test_review_fixes.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\handeye\plotting.py:41: in plot_results
+    subtitle = f"rotation sigma={rows_for(rows,experiment,'rotation_sigma_deg')} deg, translation sigma={rows_for(rows,experiment,'translation_sigma_mm')} mm"
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+rows = [{'experiment': 'baseline', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}, {'experiment': 'ro...0.1', ...}, {'experiment': 'translation_noise', 'method': 'PARK', 'n_samples': '20', 'rotation_sigma_deg': '0.1', ...}]
+experiment = 'sample_count', key = 'rotation_sigma_deg'
+
+    def rows_for(rows, experiment, key):
+>       return next(r[key] for r in rows if r["experiment"] == experiment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+src\handeye\plotting.py:53: StopIteration
+____ test_plot_missing_experiment_is_explicit_and_creates_no_figures[all] _____
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_experiment_i3')
+missing = 'all'
+
+    @pytest.mark.parametrize("missing", ["rotation_noise", "translation_noise", "sample_count", "all"])
+    def test_plot_missing_experiment_is_explicit_and_creates_no_figures(tmp_path, missing):
+        table = tmp_path / "missing.csv"
+        write_plot_input(table, missing_experiment=missing)
+        original = set(plt.get_fignums())
+        with pytest.raises(ValueError, match="缺少.*(实验类型|必需列)"):
+>           plot_results(table, tmp_path)
+
+tests\test_review_fixes.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\handeye\plotting.py:43: in plot_results
+    subtitle = f"N={rows_for(rows,experiment,'n_samples')}; other noise component = 0"
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+rows = [], experiment = 'rotation_noise', key = 'n_samples'
+
+    def rows_for(rows, experiment, key):
+>       return next(r[key] for r in rows if r["experiment"] == experiment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+src\handeye\plotting.py:53: StopIteration
+_____________ test_plot_missing_column_is_explicit_before_drawing _____________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_column_is_ex0')
+
+    def test_plot_missing_column_is_explicit_before_drawing(tmp_path):
+        table = tmp_path / "column.csv"
+        write_plot_input(table, missing_column="translation_error_mm_std")
+        original = set(plt.get_fignums())
+        with pytest.raises(ValueError, match="缺少必需列.*translation_error_mm_std"):
+>           plot_results(table, tmp_path)
+
+tests\test_review_fixes.py:185: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+summary_csv = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_column_is_ex0/column.csv')
+output_dir = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_missing_column_is_ex0')
+
+    def plot_results(summary_csv, output_dir):
+        with Path(summary_csv).open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        output = Path(output_dir)
+        methods = sorted({r["method"] for r in rows})
+        specs = [("rotation_noise", "rotation_sigma_deg", "Rotation noise sigma (deg/component)"),
+                 ("translation_noise", "translation_sigma_mm", "Translation noise sigma (mm/component)"),
+                 ("sample_count", "n_samples", "Number of pose pairs")]
+        paths = []
+        for experiment, xkey, xlabel in specs:
+            fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), constrained_layout=True)
+            for method in methods:
+                selected = sorted([r for r in rows if r["experiment"] == experiment and r["method"] == method],
+                                  key=lambda r: float(r[xkey]))
+                if not selected:
+                    continue
+                x = [float(r[xkey]) for r in selected]
+                failures = sum(int(r["failed"]) for r in selected)
+                total = sum(int(r["total"]) for r in selected)
+                label = f"{method} (failures {failures}/{total})"
+                for ax, metric, ylabel in zip(axes, ("rotation_error_deg", "translation_error_mm"),
+                                             ("Rotation error (deg)", "Translation error (mm)")):
+                    mean = [float(r[metric+"_mean"]) if r[metric+"_mean"] else np.nan for r in selected]
+>                   std = [float(r[metric+"_std"]) if r[metric+"_std"] else 0 for r in selected]
+                                                      ^^^^^^^^^^^^^^^^
+E                   KeyError: 'translation_error_mm_std'
+
+src\handeye\plotting.py:35: KeyError
+___________________ test_plot_closes_figure_on_save_failure ___________________
+
+tmp_path = WindowsPath('D:/Research/Robot-auto-calibration/.venv/fix-p2-red-temp/test_plot_closes_figure_on_sav0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002E27FDF3FE0>
+
+    def test_plot_closes_figure_on_save_failure(tmp_path, monkeypatch):
+        table = tmp_path / "complete.csv"
+        write_plot_input(table)
+        original = set(plt.get_fignums())
+    
+        def fail_save(*args, **kwargs):
+            raise OSError("FIX_simulated_disk_error")
+    
+        monkeypatch.setattr(Figure, "savefig", fail_save)
+        with pytest.raises(OSError, match="FIX_simulated_disk_error"):
+            plot_results(table, tmp_path)
+>       assert set(plt.get_fignums()) == original
+E       assert {1} == set()
+E         
+E         Extra items in the left set:
+E         1
+E         Use -v to get more diff
+
+tests\test_review_fixes.py:200: AssertionError
+_________________ test_rows_for_missing_type_has_domain_error _________________
+
+    def test_rows_for_missing_type_has_domain_error():
+        with pytest.raises(ValueError, match="实验类型.*sample_count"):
+>           rows_for([], "sample_count", "n_samples")
+
+tests\test_review_fixes.py:205: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+rows = [], experiment = 'sample_count', key = 'n_samples'
+
+    def rows_for(rows, experiment, key):
+>       return next(r[key] for r in rows if r["experiment"] == experiment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+src\handeye\plotting.py:53: StopIteration
+=========================== short test summary info ===========================
+FAILED tests/test_review_fixes.py::test_logged_closure_uses_actual_ideal_prefix
+FAILED tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[rotation_noise]
+FAILED tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[translation_noise]
+FAILED tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[sample_count]
+FAILED tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[all]
+FAILED tests/test_review_fixes.py::test_plot_missing_column_is_explicit_before_drawing
+FAILED tests/test_review_fixes.py::test_plot_closes_figure_on_save_failure - ...
+FAILED tests/test_review_fixes.py::test_rows_for_missing_type_has_domain_error
+8 failed, 11 deselected in 2.67s

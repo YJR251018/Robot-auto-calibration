@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "files_checked": 2755,
+  "changed_existing_files": [
+    "src/handeye/experiments.py",
+    "src/handeye/plotting.py"
+  ],
+  "unexpected_changes": [],
+  "original_head_and_tracked_diffs_preserved": true,
+  "branch": "fix/m1-review-20261119"
+}

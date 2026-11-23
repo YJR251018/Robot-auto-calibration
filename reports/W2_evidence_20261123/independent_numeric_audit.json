@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "independent_homogeneous_projection_candidates": 3600,
+  "counts": {
+    "visible": 1941,
+    "margin": 117,
+    "outside_image": 1542
+  },
+  "max_projection_difference_px": 4.547473508864641e-13,
+  "independently_checked_predictions": 3000,
+  "prediction_mismatches": 0,
+  "plot_visual_check": [
+    "projection_visible.png readable",
+    "projection_rejected.png readable; margin rejection explicitly labelled"
+  ]
+}

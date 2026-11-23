@@ -1,0 +1,10 @@
+{
+  "checked": 4145,
+  "changed_only": [
+    "AGENTS.md",
+    "README.md",
+    "plans/progress.json"
+  ],
+  "deleted": [],
+  "result": "PASS"
+}

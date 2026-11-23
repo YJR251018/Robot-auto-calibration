@@ -1,0 +1,344 @@
+{
+  "python": "3.12.0",
+  "numpy": "2.5.5",
+  "scipy": "1.18.1",
+  "opencv": "5.1.0",
+  "R1_R6": {
+    "identical": {
+      "pair_count": 105,
+      "rotation_axis_singular_values": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "translation_design_singular_values": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis_second_first_ratio": 0.0,
+      "translation_min_max_ratio": 0.0,
+      "nondegenerate": false
+    },
+    "pure_translation": {
+      "pair_count": 105,
+      "rotation_axis_singular_values": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "translation_design_singular_values": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axis_second_first_ratio": 0.0,
+      "translation_min_max_ratio": 0.0,
+      "nondegenerate": false
+    }
+  },
+  "R2": {
+    "run_status": {
+      "status": "complete",
+      "baseline_passed": true,
+      "trials": 8,
+      "solver_failures": 6
+    },
+    "recorded_nameerrors": 6,
+    "traceback_recorded": false,
+    "first_error_row": {
+      "experiment": "rotation_noise",
+      "condition": "r00",
+      "method": "PARK",
+      "repeat": "0",
+      "n_samples": "20",
+      "seed": "20261118",
+      "noise_seed": "20271118",
+      "rotation_sigma_deg": "0.1",
+      "translation_sigma_mm": "0.0",
+      "status": "error",
+      "failure_stage": "solve_or_evaluate",
+      "message": "NameError: TRIAGE_injected_programming_error",
+      "rotation_error_deg": "",
+      "translation_error_mm": "",
+      "baseline_pass": "",
+      "closure_max_abs": "5.551115123125783e-16",
+      "axis_ratio": "0.8300671016815901",
+      "translation_design_ratio": "0.7686493529650885",
+      "data_file": "raw/rotation_noise_r00_000.npz",
+      "estimate_file": ""
+    }
+  },
+  "R3": [
+    {
+      "g": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.47997086391226,
+          5.927067588481975,
+          5.280137063032996
+        ],
+        "translation_design_singular_values": [
+          10.127522448804974,
+          9.408040392887376,
+          9.11110412981026
+        ],
+        "axis_second_first_ratio": 0.9146750368108182,
+        "translation_min_max_ratio": 0.8996380087891437,
+        "nondegenerate": true
+      },
+      "q": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.441759364166399,
+          5.966729412239864,
+          5.282222677555944
+        ],
+        "translation_design_singular_values": [
+          10.127522448804978,
+          9.408040392887377,
+          9.111104129810261
+        ],
+        "axis_second_first_ratio": 0.926257730990545,
+        "translation_min_max_ratio": 0.8996380087891436,
+        "nondegenerate": true
+      }
+    },
+    {
+      "g": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.47997086391226,
+          5.927067588481975,
+          5.280137063032996
+        ],
+        "translation_design_singular_values": [
+          10.127522448804974,
+          9.408040392887376,
+          9.11110412981026
+        ],
+        "axis_second_first_ratio": 0.9146750368108182,
+        "translation_min_max_ratio": 0.8996380087891437,
+        "nondegenerate": true
+      },
+      "q": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.441759364166397,
+          5.966729412239864,
+          5.282222677555942
+        ],
+        "translation_design_singular_values": [
+          10.127522448804978,
+          9.40804039288738,
+          9.111104129810261
+        ],
+        "axis_second_first_ratio": 0.9262577309905453,
+        "translation_min_max_ratio": 0.8996380087891436,
+        "nondegenerate": true
+      }
+    },
+    {
+      "g": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.47997086391226,
+          5.927067588481975,
+          5.280137063032996
+        ],
+        "translation_design_singular_values": [
+          10.127522448804974,
+          9.408040392887376,
+          9.11110412981026
+        ],
+        "axis_second_first_ratio": 0.9146750368108182,
+        "translation_min_max_ratio": 0.8996380087891437,
+        "nondegenerate": true
+      },
+      "q": {
+        "pair_count": 105,
+        "rotation_axis_singular_values": [
+          6.441759364166398,
+          5.966729412239864,
+          5.282222677555941
+        ],
+        "translation_design_singular_values": [
+          10.127522448804978,
+          9.408040392887377,
+          9.11110412981026
+        ],
+        "axis_second_first_ratio": 0.9262577309905452,
+        "translation_min_max_ratio": 0.8996380087891434,
+        "nondegenerate": true
+      }
+    }
+  ],
+  "R4": {
+    "different_rows": 23,
+    "examples": [
+      {
+        "n": 8,
+        "seed": 20261121,
+        "logged_full": 5.551115123125783e-16,
+        "actual_prefix": 4.440892098500626e-16
+      },
+      {
+        "n": 8,
+        "seed": 20261123,
+        "logged_full": 8.881784197001252e-16,
+        "actual_prefix": 6.661338147750939e-16
+      },
+      {
+        "n": 8,
+        "seed": 20261124,
+        "logged_full": 6.661338147750939e-16,
+        "actual_prefix": 5.551115123125783e-16
+      },
+      {
+        "n": 8,
+        "seed": 20261128,
+        "logged_full": 6.661338147750939e-16,
+        "actual_prefix": 4.440892098500626e-16
+      },
+      {
+        "n": 8,
+        "seed": 20261132,
+        "logged_full": 7.771561172376096e-16,
+        "actual_prefix": 5.551115123125783e-16
+      },
+      {
+        "n": 8,
+        "seed": 20261135,
+        "logged_full": 5.551115123125783e-16,
+        "actual_prefix": 4.440892098500626e-16
+      }
+    ]
+  },
+  "R5": {
+    "error": "StopIteration",
+    "open_figures_after_exception": 1,
+    "normal_pipeline_gated": true
+  },
+  "R7": {
+    "exception": "CalibrationError",
+    "message": "OpenCV PARK 求解失败或结果非法: rotation 必须是有效的 3×3 旋转矩阵（det=+1）"
+  },
+  "R8": {
+    "exception_propagates": "RuntimeError",
+    "interpretation": "traceback is preserved rather than silently hidden"
+  },
+  "core_geometry": [
+    {
+      "seed": 0,
+      "method": "PARK",
+      "rotation_rad": 1.6196561046929123e-16,
+      "translation_m": 1.0620135233045646e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 0,
+      "method": "TSAI",
+      "rotation_rad": 1.6467621426106542e-16,
+      "translation_m": 2.1997497551478281e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 0,
+      "method": "PARK",
+      "rotation_rad": 7.577992792610786e-17,
+      "translation_m": 1.270499915245787e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 0,
+      "method": "TSAI",
+      "rotation_rad": 2.1798243121365306e-16,
+      "translation_m": 1.2832264423908535e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 0,
+      "method": "PARK",
+      "rotation_rad": 8.469999434971913e-17,
+      "translation_m": 4.9430547158446755e-17,
+      "AX_XB_max_abs": 1.3877787807814457e-16
+    },
+    {
+      "seed": 0,
+      "method": "TSAI",
+      "rotation_rad": 0.0,
+      "translation_m": 3.950388910483518e-17,
+      "AX_XB_max_abs": 1.3877787807814457e-16
+    },
+    {
+      "seed": 71,
+      "method": "PARK",
+      "rotation_rad": 1.692775312882563e-16,
+      "translation_m": 1.0477500027681816e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 71,
+      "method": "TSAI",
+      "rotation_rad": 1.3662309393899e-15,
+      "translation_m": 2.1163626406917047e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 71,
+      "method": "PARK",
+      "rotation_rad": 2.5888649286110324e-16,
+      "translation_m": 5.815852873680767e-17,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 71,
+      "method": "TSAI",
+      "rotation_rad": 1.2722272044504133e-15,
+      "translation_m": 1.8253379971363983e-16,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 71,
+      "method": "PARK",
+      "rotation_rad": 2.8917831650630597e-17,
+      "translation_m": 2.9238508555330186e-17,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    },
+    {
+      "seed": 71,
+      "method": "TSAI",
+      "rotation_rad": 0.0,
+      "translation_m": 1.9568599732348433e-17,
+      "AX_XB_max_abs": 2.220446049250313e-16
+    }
+  ],
+  "local_opencv_doc_signature": "calibrateHandEye(R_gripper2base, t_gripper2base, R_target2cam, t_target2cam[, R_cam2gripper[, t_cam2gripper[, method]]]) -> R_cam2gripper, t_cam2gripper",
+  "angle_metric": {
+    "library_rad": 0.6985246727582525,
+    "independent_trace_rad": 0.6985246727582527
+  },
+  "probe_test_summary": {
+    "run": 9,
+    "failures": 0,
+    "errors": 0,
+    "successful": true
+  },
+  "R3_bounded_search": {
+    "seed": 20261119,
+    "cases": 2000,
+    "sample_counts": [
+      3,
+      4,
+      8,
+      15
+    ],
+    "dominant_rotation": "z angle uniform[-pi,pi]",
+    "right_rotvec_perturbation": "normal(0,1)^3 * eps, eps=10**uniform(-4,-2)",
+    "ideal_scene": "X=I,Y=I so Q_i=inverse(G_i)",
+    "threshold": 0.001,
+    "counterexamples_found": 0,
+    "limitation": "bounded numerical search is not a proof; does not cover noisy or all possible geometries",
+    "probe_note": "First exploratory script used unsupported batched from_euler angle shape; corrected to from_rotvec without changing project code."
+  }
+}

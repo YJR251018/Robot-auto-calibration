@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "protected_files_checked": 2680,
+  "changed": [],
+  "scope": "src/tests/scripts/configs/docs/reviews/experiments/research_output and project instructions/dependencies; output only under new reports evidence directory and review_triage.md"
+}

@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "trials": 4,
+  "rotation_threshold_rad": 1e-06,
+  "translation_threshold_m": 1e-06
+}

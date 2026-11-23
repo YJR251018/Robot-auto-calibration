@@ -1,0 +1,4 @@
+交付脚本第一次尝试在创建delivery_verification.json之前核验了指向它的链接，触发AssertionError：
+(reports/M2_tonight_completion_20261123.md, W2_evidence_20261123/delivery_verification.json)
+这是交付核验顺序问题，非产品测试或科研计算错误。
+修正：该确定的自生成报告链接在写入后确认存在，其余文档链接仍逐个先检查。没有跳过源码保护、哈希或完整测试核验。

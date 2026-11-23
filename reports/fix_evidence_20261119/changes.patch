@@ -1,0 +1,441 @@
+--- before/src/handeye/experiments.py
++++ after/src/handeye/experiments.py
+@@ -1,18 +1,19 @@
+ """可复算实验：无噪声关卡、配对噪声/样本量、逐次结果与失败记录。"""
+ 
+ import csv
+-from dataclasses import asdict, dataclass, field
++from dataclasses import asdict, dataclass, field, replace
+ import hashlib
+ import json
+ from pathlib import Path
+ import platform
++import traceback
+ 
+ import cv2
+ import matplotlib
+ import numpy as np
+ import scipy
+ 
+-from .calibration import METHODS, calibrate_hand_eye, motion_diagnostics
++from .calibration import METHODS, CalibrationError, calibrate_hand_eye, motion_diagnostics
+ from .metrics import pose_error
+ from .simulation import (SceneConfig, add_observation_noise, closure_error,
+                          generate_dataset, nonnegative_integer, nonnegative_real)
+@@ -72,7 +73,7 @@
+ 
+ 
+ FIELDS = ["experiment", "condition", "method", "repeat", "n_samples", "seed", "noise_seed",
+-          "rotation_sigma_deg", "translation_sigma_mm", "status", "failure_stage", "message",
++          "rotation_sigma_deg", "translation_sigma_mm", "status", "failure_stage", "message", "traceback_file",
+           "rotation_error_deg", "translation_error_mm", "baseline_pass", "closure_max_abs",
+           "axis_ratio", "translation_design_ratio", "data_file", "estimate_file"]
+ 
+@@ -137,6 +138,15 @@
+     max_samples = max(config.noise_sample_count, *config.sample_counts)
+ 
+     def execute_condition(experiment, condition, n_samples, rotation_deg, translation_mm, writer, handle):
++        def persist_unexpected(row, exc, phase):
++            # 当前失败行必须在重新抛出前保存，不能依赖后面的正常写入路径。
++            (output / "traceback.txt").write_text(traceback.format_exc(), encoding="utf-8")
++            row.update(failure_stage=f"unexpected_{phase}", message=f"{type(exc).__name__}: {exc}",
++                       traceback_file="traceback.txt")
++            records.append(row)
++            writer.writerow(row)
++            handle.flush()
++
+         for repeat in range(config.repeats):
+             seed, noise_seed = config.seed_start + repeat, config.noise_seed_start + repeat
+             common = dict(experiment=experiment, condition=condition, repeat=repeat, n_samples=n_samples,
+@@ -150,7 +160,8 @@
+                                                  translation_sigma_m=translation_mm/1000, seed=noise_seed)
+                 g, q = data.t_b_g[:n_samples], noisy_all[:n_samples]
+                 diagnostics = motion_diagnostics(g)
+-                closure = closure_error(data)
++                # 与本行保存/使用的N帧理想观测对应，不记录未使用的完整序列。
++                closure = closure_error(replace(data, t_b_g=g, t_c_t=data.t_c_t[:n_samples]))
+                 data_path = f"raw/{stem}.npz"
+                 np.savez_compressed(output / data_path, t_b_g=g, t_c_t=q,
+                                     t_c_t_ideal=data.t_c_t[:n_samples],
+@@ -161,7 +172,7 @@
+             except ValueError as exc:
+                 generation_error = f"{type(exc).__name__}: {exc}"
+             for method in config.methods:
+-                row = dict(common, method=method, status="error", failure_stage="generation", message="",
++                row = dict(common, method=method, status="error", failure_stage="generation", message="", traceback_file="",
+                            rotation_error_deg=None, translation_error_mm=None, baseline_pass=None,
+                            closure_max_abs=None, axis_ratio=None, translation_design_ratio=None,
+                            data_file="", estimate_file="")
+@@ -171,12 +182,20 @@
+                     row.update(data_file=data_path, closure_max_abs=closure,
+                                axis_ratio=diagnostics["axis_second_first_ratio"],
+                                translation_design_ratio=diagnostics["translation_min_max_ratio"])
++                    phase = "solve"
+                     try:
+                         estimate = calibrate_hand_eye(g, q, method=method)
++                        phase = "evaluate"
+                         error = pose_error(estimate, data.t_g_c_true)
++                    except (CalibrationError, ValueError) as exc:
++                        if phase != "solve":
++                            persist_unexpected(row, exc, phase)
++                            raise
++                        # 数据拒收/已知求解失败保留行，继续执行既定实验协议。
++                        row.update(failure_stage="solve_or_evaluate", message=f"{type(exc).__name__}: {exc}")
+                     except Exception as exc:
+-                        # 包括意外异常：记录类型/消息，保留该次失败，不填零误差。
+-                        row.update(failure_stage="solve_or_evaluate", message=f"{type(exc).__name__}: {exc}")
++                        persist_unexpected(row, exc, phase)
++                        raise
+                     else:
+                         estimate_path = f"estimates/{stem}_{method}.json"
+                         _write_json(output / estimate_path, {"T_G_C_estimated": estimate.tolist()})
+@@ -227,6 +246,7 @@
+                  f"求解记录 {len(records)} 条，失败 {final_status['solver_failures']} 条。",
+                  "无噪声关卡：" + ("通过。" if baseline_pass else "失败；已停止噪声和采样数实验。"), "",
+                  "所有数值见 trials.csv 和 summary.csv；配置见 config.json。",
++                 "closure_max_abs 是当前n_samples帧理想观测的闭环最大元素残差，不是带噪测量残差。",
+                  "同一重复/条件的两方法共享完全相同观测；不同 N 使用共同长序列前缀。",
+                  "噪声标准差为三分量标准差；统计标准差 ddof=1，图中误差棒为均值±1样本标准差（不是置信区间）。",
+                  "统计仅针对成功求解，同时列出失败数；失败误差留空，不按0处理。", "",
+@@ -238,6 +258,9 @@
+         _write_json(output / "artifact_hashes.json", hashes)
+         return final_status
+     except Exception as exc:
++        (output / "traceback.txt").write_text(traceback.format_exc(), encoding="utf-8")
++        stage = records[-1]["failure_stage"] if records and records[-1]["failure_stage"].startswith("unexpected_") else "pipeline"
+         _write_json(output / "run_status.json", {"status": "failed", "message": f"{type(exc).__name__}: {exc}",
+-                                                 "recorded_trials": len(records)})
++                                                 "recorded_trials": len(records), "failure_stage": stage,
++                                                 "traceback_file": "traceback.txt"})
+         raise
+--- before/src/handeye/plotting.py
++++ after/src/handeye/plotting.py
+@@ -11,43 +11,59 @@
+ 
+ def plot_results(summary_csv, output_dir):
+     with Path(summary_csv).open(encoding="utf-8", newline="") as handle:
+-        rows = list(csv.DictReader(handle))
++        reader = csv.DictReader(handle)
++        rows = list(reader)
++        columns = set(reader.fieldnames or [])
+     output = Path(output_dir)
+     methods = sorted({r["method"] for r in rows})
+     specs = [("rotation_noise", "rotation_sigma_deg", "Rotation noise sigma (deg/component)"),
+              ("translation_noise", "translation_sigma_mm", "Translation noise sigma (mm/component)"),
+              ("sample_count", "n_samples", "Number of pose pairs")]
++    required = {"experiment", "method", "n_samples", "rotation_sigma_deg", "translation_sigma_mm",
++                "failed", "total", "rotation_error_deg_mean", "rotation_error_deg_std",
++                "translation_error_mm_mean", "translation_error_mm_std"}
++    missing_columns = required - columns
++    if missing_columns:
++        raise ValueError(f"summary.csv 缺少必需列: {', '.join(sorted(missing_columns))}")
++    missing_experiments = {spec[0] for spec in specs} - {r["experiment"] for r in rows}
++    if missing_experiments:
++        raise ValueError(f"summary.csv 缺少实验类型: {', '.join(sorted(missing_experiments))}")
+     paths = []
+     for experiment, xkey, xlabel in specs:
+         fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), constrained_layout=True)
+-        for method in methods:
+-            selected = sorted([r for r in rows if r["experiment"] == experiment and r["method"] == method],
+-                              key=lambda r: float(r[xkey]))
+-            if not selected:
+-                continue
+-            x = [float(r[xkey]) for r in selected]
+-            failures = sum(int(r["failed"]) for r in selected)
+-            total = sum(int(r["total"]) for r in selected)
+-            label = f"{method} (failures {failures}/{total})"
+-            for ax, metric, ylabel in zip(axes, ("rotation_error_deg", "translation_error_mm"),
+-                                         ("Rotation error (deg)", "Translation error (mm)")):
+-                mean = [float(r[metric+"_mean"]) if r[metric+"_mean"] else np.nan for r in selected]
+-                std = [float(r[metric+"_std"]) if r[metric+"_std"] else 0 for r in selected]
+-                ax.errorbar(x, mean, yerr=std, marker="o", capsize=3, linewidth=1.5, label=label)
+-                ax.set(xlabel=xlabel, ylabel=ylabel)
+-                ax.grid(alpha=0.25)
+-                ax.legend(fontsize=8)
+-        if experiment == "sample_count":
+-            subtitle = f"rotation sigma={rows_for(rows,experiment,'rotation_sigma_deg')} deg, translation sigma={rows_for(rows,experiment,'translation_sigma_mm')} mm"
+-        else:
+-            subtitle = f"N={rows_for(rows,experiment,'n_samples')}; other noise component = 0"
+-        fig.suptitle(f"{experiment.replace('_', ' ').title()} | {subtitle}\nMean +/- 1 sample SD; ideal pose observations", fontsize=11)
+-        path = output / f"{experiment}.png"
+-        fig.savefig(path, dpi=180)
+-        plt.close(fig)
+-        paths.append(path)
++        try:
++            for method in methods:
++                selected = sorted([r for r in rows if r["experiment"] == experiment and r["method"] == method],
++                                  key=lambda r: float(r[xkey]))
++                if not selected:
++                    continue
++                x = [float(r[xkey]) for r in selected]
++                failures = sum(int(r["failed"]) for r in selected)
++                total = sum(int(r["total"]) for r in selected)
++                label = f"{method} (failures {failures}/{total})"
++                for ax, metric, ylabel in zip(axes, ("rotation_error_deg", "translation_error_mm"),
++                                             ("Rotation error (deg)", "Translation error (mm)")):
++                    mean = [float(r[metric+"_mean"]) if r[metric+"_mean"] else np.nan for r in selected]
++                    std = [float(r[metric+"_std"]) if r[metric+"_std"] else 0 for r in selected]
++                    ax.errorbar(x, mean, yerr=std, marker="o", capsize=3, linewidth=1.5, label=label)
++                    ax.set(xlabel=xlabel, ylabel=ylabel)
++                    ax.grid(alpha=0.25)
++                    ax.legend(fontsize=8)
++            if experiment == "sample_count":
++                subtitle = f"rotation sigma={rows_for(rows,experiment,'rotation_sigma_deg')} deg, translation sigma={rows_for(rows,experiment,'translation_sigma_mm')} mm"
++            else:
++                subtitle = f"N={rows_for(rows,experiment,'n_samples')}; other noise component = 0"
++            fig.suptitle(f"{experiment.replace('_', ' ').title()} | {subtitle}\nMean +/- 1 sample SD; ideal pose observations", fontsize=11)
++            path = output / f"{experiment}.png"
++            fig.savefig(path, dpi=180)
++            paths.append(path)
++        finally:
++            plt.close(fig)
+     return paths
+ 
+ 
+ def rows_for(rows, experiment, key):
+-    return next(r[key] for r in rows if r["experiment"] == experiment)
++    for row in rows:
++        if row["experiment"] == experiment:
++            return row[key]
++    raise ValueError(f"实验类型 '{experiment}' 在 summary.csv 中不存在")
+--- /dev/null
++++ after/tests/test_review_fixes.py
+@@ -0,0 +1,238 @@
++"""审查回归：失败落盘、理想前缀、绘图资源和既有保护行为。
++
++本文件中的故障注入/小表格仅用于测试，不是科研实验数据。
++"""
++
++import csv
++from dataclasses import asdict
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++
++from matplotlib.figure import Figure
++import matplotlib.pyplot as plt
++import numpy as np
++import pytest
++
++import handeye.calibration as calibration
++import handeye.experiments as experiments
++from handeye.calibration import CalibrationError, calibrate_hand_eye, motion_diagnostics
++from handeye.experiments import ExperimentConfig, run_experiment
++from handeye.plotting import plot_results, rows_for
++from handeye.simulation import generate_dataset
++from handeye.transforms import make_transform, rotation_matrix
++
++
++def config(**kwargs):
++    return ExperimentConfig(repeats=2, rotation_noise_deg=(0.1,),
++                            translation_noise_mm=(0.5,), sample_counts=(8,), **kwargs)
++
++
++def read_trials(folder):
++    with (folder / "trials.csv").open(encoding="utf-8", newline="") as handle:
++        return list(csv.DictReader(handle))
++
++
++@pytest.fixture(autouse=True)
++def close_only_test_figures():
++    original = set(plt.get_fignums())
++    yield
++    for number in set(plt.get_fignums()) - original:
++        plt.close(number)
++
++
++@pytest.mark.parametrize("phase,error_type", [("solve", NameError), ("solve", TypeError),
++                                             ("evaluate", ValueError)])
++def test_unexpected_error_persisted_then_reraised(tmp_path, monkeypatch, phase, error_type):
++    target = "calibrate_hand_eye" if phase == "solve" else "pose_error"
++    real = getattr(experiments, target)
++    calls = 0
++
++    def raise_programmer_error_after_baseline(*args, **kwargs):
++        nonlocal calls
++        calls += 1
++        if calls == 5:  # 2 repeats × 2 methods 已通过无噪声关卡。
++            raise error_type("FIX_injected_programming_error")
++        return real(*args, **kwargs)
++
++    monkeypatch.setattr(experiments, target, raise_programmer_error_after_baseline)
++    folder = tmp_path / "unexpected"
++    with pytest.raises(error_type, match="FIX_injected_programming_error"):
++        run_experiment(config(), folder)
++    assert calls == 5
++    rows = read_trials(folder)
++    assert len(rows) == 5  # 当前失败行也必须先落盘，不能只留下基线。
++    assert rows[-1]["status"] == "error"
++    assert rows[-1]["failure_stage"] == f"unexpected_{phase}"
++    assert rows[-1]["rotation_error_deg"] == rows[-1]["translation_error_mm"] == ""
++    trace = (folder / rows[-1]["traceback_file"]).read_text(encoding="utf-8")
++    assert "Traceback (most recent call last)" in trace
++    assert "raise_programmer_error_after_baseline" in trace
++    assert error_type.__name__ in trace and "FIX_injected_programming_error" in trace
++    status = json.loads((folder / "run_status.json").read_text(encoding="utf-8"))
++    assert status["status"] == "failed" and status["recorded_trials"] == 5
++    assert status["failure_stage"] == f"unexpected_{phase}"
++    assert (folder / status["traceback_file"]).is_file()
++    assert not (folder / "summary.csv").exists()
++    assert not list(folder.glob("*.png"))
++
++
++@pytest.mark.parametrize("error_type", [CalibrationError, ValueError])
++def test_expected_solver_failure_still_continues_and_keeps_rows(tmp_path, monkeypatch, error_type):
++    real = experiments.calibrate_hand_eye
++    calls = 0
++
++    def expected_failure(*args, **kwargs):
++        nonlocal calls
++        calls += 1
++        if calls > 4:
++            raise error_type("expected data or solver failure")
++        return real(*args, **kwargs)
++
++    monkeypatch.setattr(experiments, "calibrate_hand_eye", expected_failure)
++    folder = tmp_path / "expected"
++    status = run_experiment(config(), folder)
++    assert status["status"] == "complete" and status["solver_failures"] == 12
++    rows = read_trials(folder)
++    assert len(rows) == 16
++    assert all(r["status"] == "error" and r["rotation_error_deg"] == "" for r in rows[4:])
++    assert not (folder / "traceback.txt").exists()
++
++
++@pytest.mark.parametrize("kind", ["identical", "pure_translation", "single_axis", "tiny_angle"])
++def test_degenerate_diagnostic_and_adapter_do_not_call_opencv(monkeypatch, kind):
++    poses = np.repeat(np.eye(4)[None], 15, axis=0)
++    if kind == "pure_translation":
++        poses[:, 0, 3] = np.linspace(0, 1, 15)
++    if kind in ("single_axis", "tiny_angle"):
++        maximum = 1.0 if kind == "single_axis" else 1e-10
++        poses = np.stack([make_transform(rotation_matrix("z", angle), [angle, 0, 0])
++                          for angle in np.linspace(0, maximum, 15)])
++    diagnostics = motion_diagnostics(poses)
++    assert diagnostics["nondegenerate"] is False
++    assert diagnostics["axis_second_first_ratio"] == 0.0
++    calls = []
++    monkeypatch.setattr(calibration.cv2, "calibrateHandEye", lambda *a, **k: calls.append(True))
++    with pytest.raises(ValueError, match="机器人运动退化或近退化"):
++        calibrate_hand_eye(poses, generate_dataset(15).t_c_t)
++    assert calls == []
++
++
++def test_opencv_reflection_output_is_rejected(monkeypatch):
++    data = generate_dataset(15)
++    monkeypatch.setattr(calibration.cv2, "calibrateHandEye",
++                        lambda *a, **k: (np.diag([1.0, 1.0, -1.0]), np.zeros((3, 1))))
++    with pytest.raises(CalibrationError, match=r"det=\+1"):
++        calibrate_hand_eye(data.t_b_g, data.t_c_t)
++
++
++def test_logged_closure_uses_actual_ideal_prefix(tmp_path, monkeypatch):
++    checked_lengths = []
++    real = experiments.closure_error
++
++    def observe_length(data):
++        checked_lengths.append(len(data.t_b_g))
++        return real(data)
++
++    monkeypatch.setattr(experiments, "closure_error", observe_length)
++    folder = tmp_path / "prefix"
++    run_experiment(config(methods=("PARK",), seed_start=20261121), folder)
++    assert checked_lengths[-2:] == [8, 8]
++    for row in read_trials(folder):
++        with np.load(folder / row["data_file"], allow_pickle=False) as raw:
++            expected = float(np.max(np.abs(raw["t_b_g"] @ raw["t_g_c_true"] @
++                                           raw["t_c_t_ideal"] - raw["t_b_t_true"])))
++        assert float(row["closure_max_abs"]) == expected
++
++
++def write_plot_input(path, *, missing_experiment=None, missing_column=None):
++    rows = []
++    for experiment in ("baseline", "rotation_noise", "translation_noise", "sample_count"):
++        if experiment == missing_experiment or missing_experiment == "all":
++            continue
++        row = dict(experiment=experiment, method="PARK", n_samples=20,
++                   rotation_sigma_deg=0.1, translation_sigma_mm=0.5,
++                   failed=0, total=2, rotation_error_deg_mean=0.1, rotation_error_deg_std=0.01,
++                   translation_error_mm_mean=0.5, translation_error_mm_std=0.05)
++        if missing_column:
++            row.pop(missing_column)
++        rows.append(row)
++    fields = list(rows[0]) if rows else ["experiment", "method"]
++    with path.open("w", encoding="utf-8", newline="") as handle:
++        writer = csv.DictWriter(handle, fieldnames=fields)
++        writer.writeheader()
++        writer.writerows(rows)
++
++
++@pytest.mark.parametrize("missing", ["rotation_noise", "translation_noise", "sample_count", "all"])
++def test_plot_missing_experiment_is_explicit_and_creates_no_figures(tmp_path, missing):
++    table = tmp_path / "missing.csv"
++    write_plot_input(table, missing_experiment=missing)
++    original = set(plt.get_fignums())
++    with pytest.raises(ValueError, match="缺少.*(实验类型|必需列)"):
++        plot_results(table, tmp_path)
++    assert set(plt.get_fignums()) == original
++    assert not list(tmp_path.glob("*.png"))
++
++
++def test_plot_missing_column_is_explicit_before_drawing(tmp_path):
++    table = tmp_path / "column.csv"
++    write_plot_input(table, missing_column="translation_error_mm_std")
++    original = set(plt.get_fignums())
++    with pytest.raises(ValueError, match="缺少必需列.*translation_error_mm_std"):
++        plot_results(table, tmp_path)
++    assert set(plt.get_fignums()) == original
++
++
++def test_plot_closes_figure_on_save_failure(tmp_path, monkeypatch):
++    table = tmp_path / "complete.csv"
++    write_plot_input(table)
++    original = set(plt.get_fignums())
++
++    def fail_save(*args, **kwargs):
++        raise OSError("FIX_simulated_disk_error")
++
++    monkeypatch.setattr(Figure, "savefig", fail_save)
++    with pytest.raises(OSError, match="FIX_simulated_disk_error"):
++        plot_results(table, tmp_path)
++    assert set(plt.get_fignums()) == original
++
++
++def test_rows_for_missing_type_has_domain_error():
++    with pytest.raises(ValueError, match="实验类型.*sample_count"):
++        rows_for([], "sample_count", "n_samples")
++
++
++def test_cli_unexpected_error_is_nonzero_with_traceback(tmp_path):
++    root = Path(__file__).resolve().parents[1]
++    config_file = tmp_path / "config.json"
++    config_file.write_text(json.dumps(asdict(config())), encoding="utf-8")
++    folder = tmp_path / "cli_failed"
++    # 独立进程中注入故障，不编辑CLI或真实求解模块。
++    bootstrap = """
++import runpy, sys
++import handeye.experiments as exp
++real = exp.calibrate_hand_eye
++calls = 0
++def fail_after_baseline(*args, **kwargs):
++    global calls
++    calls += 1
++    if calls > 4:
++        raise NameError('FIX_cli_programmer_error')
++    return real(*args, **kwargs)
++exp.calibrate_hand_eye = fail_after_baseline
++sys.argv = ['run_m1.py', '--config', sys.argv[1], '--output', sys.argv[2]]
++runpy.run_path('scripts/run_m1.py', run_name='__main__')
++"""
++    env = os.environ.copy()
++    env["PYTHONPATH"] = str(root / "src")
++    env["PYTHONIOENCODING"] = "utf-8"
++    result = subprocess.run([sys.executable, "-c", bootstrap, str(config_file), str(folder)],
++                            cwd=root, env=env, capture_output=True, text=True, encoding="utf-8")
++    assert result.returncode != 0
++    assert "Traceback (most recent call last)" in result.stderr
++    assert "FIX_cli_programmer_error" in result.stderr
++    status = json.loads((folder / "run_status.json").read_text(encoding="utf-8"))
++    assert status["status"] == "failed" and status["recorded_trials"] == 5

@@ -1,0 +1,541 @@
+..............................................................EEE....... [ 31%]
+..EEEEEEE..........E..................................EE.E......EEEEEE.. [ 63%]
+...EEEEEEE.E............................................................ [ 95%]
+..........                                                               [100%]
+=================================== ERRORS ====================================
+_ ERROR at setup of test_experiment_reproducible_csv_saved_inputs_and_real_plots _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_baseline_failure_stops_before_noise_and_is_preserved _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_noisy_solver_failures_are_retained_with_empty_errors _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+__________ ERROR at setup of test_real_chain_replay_and_no_overwrite __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def complete_run(tmp_path_factory):
+>       folder=tmp_path_factory.mktemp('m2')/'complete'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_m2_experiments.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_______ ERROR at setup of test_raw_pairing_and_holdout_are_independent ________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def complete_run(tmp_path_factory):
+>       folder=tmp_path_factory.mktemp('m2')/'complete'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_m2_experiments.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+________________ ERROR at setup of test_tampering_is_rejected _________________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def complete_run(tmp_path_factory):
+>       folder=tmp_path_factory.mktemp('m2')/'complete'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_m2_experiments.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_unexpected_after_baseline_persists_and_stops[solve-NameError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_unexpected_after_baseline_persists_and_stops[evaluate-ValueError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_________ ERROR at setup of test_expected_solver_failures_are_counted _________
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_____________ ERROR at setup of test_bad_baseline_prevents_noise ______________
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_______ ERROR at setup of test_cli_rejects_existing_and_outside_output ________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def complete_run(tmp_path_factory):
+>       folder=tmp_path_factory.mktemp('m2')/'complete'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_m2_experiments.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_____ ERROR at setup of test_real_projection_run_replay_and_no_overwrite ______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def completed(tmp_path_factory):
+>       folder = tmp_path_factory.mktemp('projection')/'run'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_projection_experiment.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_______ ERROR at setup of test_unexpected_error_saves_current_seed_data _______
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_________________ ERROR at setup of test_hash_tamper_rejected _________________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/...luggy._tracing.TagTracerSub object at 0x000001EB8000E3F0>, _basetemp=None, _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def completed(tmp_path_factory):
+>       folder = tmp_path_factory.mktemp('projection')/'run'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_projection_experiment.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\Lib\site-packages\_pytest\tmpdir.py:138: in mktemp
+    basename = self._ensure_relative_to_basetemp(basename)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:118: in _ensure_relative_to_basetemp
+    if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        ^^^^^^^^^^^^^^^^^^
+..\Lib\site-packages\_pytest\tmpdir.py:198: in getbasetemp
+    basetemp.mkdir(mode=0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+________ ERROR at setup of test_board_outside_and_no_replacement_seed _________
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_unexpected_error_persisted_then_reraised[solve-NameError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_unexpected_error_persisted_then_reraised[solve-TypeError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_unexpected_error_persisted_then_reraised[evaluate-ValueError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_expected_solver_failure_still_continues_and_keeps_rows[CalibrationError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_expected_solver_failure_still_continues_and_keeps_rows[ValueError] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_______ ERROR at setup of test_logged_closure_uses_actual_ideal_prefix ________
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_plot_missing_experiment_is_explicit_and_creates_no_figures[rotation_noise] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_plot_missing_experiment_is_explicit_and_creates_no_figures[translation_noise] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_plot_missing_experiment_is_explicit_and_creates_no_figures[sample_count] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+_ ERROR at setup of test_plot_missing_experiment_is_explicit_and_creates_no_figures[all] _
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+____ ERROR at setup of test_plot_missing_column_is_explicit_before_drawing ____
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+__________ ERROR at setup of test_plot_closes_figure_on_save_failure __________
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+____ ERROR at setup of test_cli_unexpected_error_is_nonzero_with_traceback ____
+
+self = WindowsPath('D:/Research/Robot-auto-calibration/.venv/publish_checkout_20261123/.venv/fresh-publish-tests')
+mode = 448, parents = False, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'D:\\Research\\Robot-auto-calibration\\.venv\\publish_checkout_20261123\\.venv\\fresh-publish-tests'
+
+D:\Program Files\Python3.12\Lib\pathlib.py:1312: FileNotFoundError
+=========================== short test summary info ===========================
+ERROR tests/test_m1.py::test_experiment_reproducible_csv_saved_inputs_and_real_plots
+ERROR tests/test_m1.py::test_baseline_failure_stops_before_noise_and_is_preserved
+ERROR tests/test_m1.py::test_noisy_solver_failures_are_retained_with_empty_errors
+ERROR tests/test_m2_experiments.py::test_real_chain_replay_and_no_overwrite
+ERROR tests/test_m2_experiments.py::test_raw_pairing_and_holdout_are_independent
+ERROR tests/test_m2_experiments.py::test_tampering_is_rejected - FileNotFound...
+ERROR tests/test_m2_experiments.py::test_unexpected_after_baseline_persists_and_stops[solve-NameError]
+ERROR tests/test_m2_experiments.py::test_unexpected_after_baseline_persists_and_stops[evaluate-ValueError]
+ERROR tests/test_m2_experiments.py::test_expected_solver_failures_are_counted
+ERROR tests/test_m2_experiments.py::test_bad_baseline_prevents_noise - FileNo...
+ERROR tests/test_m2_experiments.py::test_cli_rejects_existing_and_outside_output
+ERROR tests/test_projection_experiment.py::test_real_projection_run_replay_and_no_overwrite
+ERROR tests/test_projection_experiment.py::test_unexpected_error_saves_current_seed_data
+ERROR tests/test_projection_experiment.py::test_hash_tamper_rejected - FileNo...
+ERROR tests/test_projection_experiment.py::test_board_outside_and_no_replacement_seed
+ERROR tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[solve-NameError]
+ERROR tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[solve-TypeError]
+ERROR tests/test_review_fixes.py::test_unexpected_error_persisted_then_reraised[evaluate-ValueError]
+ERROR tests/test_review_fixes.py::test_expected_solver_failure_still_continues_and_keeps_rows[CalibrationError]
+ERROR tests/test_review_fixes.py::test_expected_solver_failure_still_continues_and_keeps_rows[ValueError]
+ERROR tests/test_review_fixes.py::test_logged_closure_uses_actual_ideal_prefix
+ERROR tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[rotation_noise]
+ERROR tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[translation_noise]
+ERROR tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[sample_count]
+ERROR tests/test_review_fixes.py::test_plot_missing_experiment_is_explicit_and_creates_no_figures[all]
+ERROR tests/test_review_fixes.py::test_plot_missing_column_is_explicit_before_drawing
+ERROR tests/test_review_fixes.py::test_plot_closes_figure_on_save_failure - F...
+ERROR tests/test_review_fixes.py::test_cli_unexpected_error_is_nonzero_with_traceback
+198 passed, 28 errors in 3.53s

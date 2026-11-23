@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "existing_files_unchanged": 4133,
+  "changed_existing_files": [],
+  "deleted_existing_files": [],
+  "pytest": {
+    "tests": 143,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "relative_links_checked": 14,
+  "head_unchanged": true,
+  "development_started": false,
+  "planned_trials_not_executed": 2160,
+  "plan_files": {
+    "plans/DAILY_RUNBOOK.md": "9ed4722b1605284e3f924eb7cdc1d740c984d692762aebc96e0f952f1fd5aa1f",
+    "plans/progress.json": "b7fd3f972aa12df6c5f32313911ffc58780f94001dcea247d0a3d5540df3f2df",
+    "plans/TONIGHT_M2_20261123.md": "41bf360372240c3c4e1a900e40ea984edd294ace6f313f99b4fe439c6d6df687",
+    "plans/WEEK_PLAN_20261123.md": "77b272b8dfc822df1cdfbcfa8cbabb40c477b29cad7a9981d1a4cd70c367cdeb"
+  }
+}

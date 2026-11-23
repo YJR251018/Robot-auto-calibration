@@ -1,0 +1,2228 @@
+diff --git a/.gitignore b/.gitignore
+index bf3b1f6..c865cfb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,12 +1,11 @@
+-/.pylibs/
+-/.venv/
++# Project-local Python environment
++.venv/
++
++# Python and test caches
+ __pycache__/
+ *.py[cod]
+-/.env
+-/calibration-demo/
+-/calibration-data/
+-/rotation-coverage.json
++.pytest_cache/
+ 
+-/文献/
+-/*项目申报书.docx
+-~$*
++# Local editor settings
++.vscode/
++.idea/
+diff --git a/README.md b/README.md
+index 32b670c..639f1b9 100644
+--- a/README.md
++++ b/README.md
+@@ -1,98 +1,102 @@
+-# 机器人相机标定工具
++# 机器人自动手眼标定
++
++机械专业本科生大创项目，基于 Python 和 OpenCV，先开展 Eye-in-Hand（相机安装在机器人末端）算法仿真，再研究自动采样与位姿规划。
++
++**当前阶段：项目环境与目录初始化。尚未实现标定求解算法、GUI 或硬件控制。**
++
++## 最小目录结构
++
++```text
++Robot-auto-calibration/
++├── README.md                 # 项目说明与操作步骤
++├── AGENTS.md                 # Codex 开发约定与当前范围
++├── INITIALIZATION.md         # 本次实际命令、环境结果与待处理事项
++├── requirements.txt          # 五项直接依赖
++├── requirements-lock.txt     # 实际安装版本及传递依赖，安装成功后生成
++├── .gitignore                # 排除虚拟环境和缓存
++├── src/
++│   └── README.md             # 源代码目录用途；暂不实现算法
++├── tests/
++│   └── test_environment.py   # 五项依赖的导入检查
++├── .venv/                    # 本机虚拟环境，不提交 Git
++└── 文献/                     # 已有资料，保留
++```
+ 
+-在桌面工作台中检查棋盘格照片与机器人位姿，计算相机内参或手眼变换，并导出可复查的 JSON 结果。面向机器人视觉开发、实验教学和校内自动标定研究。
++项目根目录中的已有申报书同样保留。需要仿真数据、实验结果或研究记录时，再增加相应目录。
+ 
+-## 快速开始
++## Windows 环境与首次安装
+ 
+-已在 Windows 11、Python 3.12、Tkinter 8.6、NumPy 2.4.6 和 OpenCV 5.0.0 环境验证。Tkinter 随本次验证使用的 Windows Python 安装提供。
++以下命令均在 PowerShell 的项目目录中执行：
+ 
+ ```powershell
+-python -m pip install -r requirements.txt
+-python -m robot_calibration
++Set-Location D:\Research\Robot-auto-calibration
++python --version
++py -0p
++git --version
++python -m venv .venv
++.\.venv\Scripts\python.exe -m pip install -r requirements.txt
++.\.venv\Scripts\python.exe -m pytest -q
+ ```
+ 
+-在项目目录运行以上命令。首次体验可任选一个模式，依次点击 **载入演示数据 → 运行标定 → 导出 JSON**。每种模式提供 15 张模拟棋盘格照片。手眼演示同时提供配对的机器人末端位姿和用于对照的已知变换。
+-
+-| 模式 | 安装配置与输入 | 导出结果 |
+-|---|---|---|
+-| 相机内参 | 同一台相机拍摄的棋盘格照片、内角点行列数、方格边长 | 内参矩阵、畸变系数、整体和逐帧重投影误差 |
+-| 眼在手上 | 相机装在机器人末端，棋盘格固定。输入相机内参、图像与末端位姿 | 相机到机器人末端的变换 |
+-| 眼在手外 | 相机固定，棋盘格装在机器人末端。输入相机内参、图像与末端位姿 | 相机到机器人基座的变换 |
+-
+-手眼结果包含变换方向、长度单位、使用的内参、有效样本和拒绝原因。界面中的板位姿离散程度用于检查参与求解的样本是否一致。仿真额外显示与真值相比的误差。
+-
+-## 导入实采数据
+-
+-1. 采集同一分辨率的棋盘格照片。记录实际方格边长（mm）、内角点列数与行数。手眼模式要求行列一奇一偶，例如 **9 × 6 个内角点**，用对角的黑白格统一角点方向。拍摄时保留完整棋盘格和白边。
+-2. 先在 **相机内参** 模式标定，或准备符合下述格式的内参文件。每次改变相机分辨率、镜头焦距或图像裁剪方式时，核对对应的内参。
+-3. 机器人停稳后记录实际末端位姿，用图像名作为配对键。同一次采集中使用同一套基座、末端和长度单位约定，并采集绕不同轴转动的画面。
+-4. 在手眼模式选择照片目录、位姿 JSON 和相机内参。运行后在样本表检查拒绝原因与重投影误差。现场控制器导出的欧拉角或四元数需先按厂商约定转换成 4 × 4 矩阵。
+-
+-### 位姿文件
+-
+-`poses.json` 声明 `frame` 为 `gripper_to_base`，`length_unit` 为 `mm`。每项矩阵把末端坐标中的点变换到机器人基座坐标。右上角一列为平移，最下一行是 `[0, 0, 0, 1]`。下面只展示一条记录，实际至少准备 3 组有效且旋转轴多样的位姿。
+-
+-```json
+-{
+-  "frame": "gripper_to_base",
+-  "length_unit": "mm",
+-  "samples": [
+-    {
+-      "image": "view_01.png",
+-      "matrix": [
+-        [1, 0, 0, 350],
+-        [0, 1, 0, 100],
+-        [0, 0, 1, 520],
+-        [0, 0, 0, 1]
+-      ]
+-    }
+-  ]
+-}
+-```
++本次检查到 Python 3.12.0（64 位）及 Git 2.54.0.windows.1；`python` 指向 `D:\Program Files\Python3.12\python.exe`，`py -3.12` 也可选择该解释器。`python3` 是 Windows 应用别名，本项目不依赖它。
++
++`venv` 是 Python 自带的虚拟环境工具。也可使用 `py -3.12 -m venv .venv`，两种创建方式选择一种即可，不要重复创建已有环境。`.venv` 将项目依赖与全局 Python 隔离。
++
++直接调用 `.venv\Scripts\python.exe` 不需要激活环境。可选激活命令为 `.\.venv\Scripts\Activate.ps1`；如果脚本被策略阻止，继续使用上述完整路径，无须修改系统执行策略。
+ 
+-相机内参可直接使用工作台导出的 JSON。手眼模式读取 `camera_matrix`、`distortion` 和 `image_size`，尺寸顺序为 `[宽, 高]`。内参求解至少需要 5 张角点完整、尺寸一致且位置有变化的照片。
++## 依赖用途
+ 
+-## 命令行复现
++| 安装名称 | 导入名称 | 用途 |
++| --- | --- | --- |
++| NumPy | numpy | 数组、矩阵与基础数值运算 |
++| SciPy | scipy | 旋转表示、科学计算和后续优化 |
++| opencv-python | cv2 | 图像处理与后续手眼标定实验 |
++| Matplotlib | matplotlib | 仿真结果与误差可视化 |
++| pytest | pytest | 自动化测试 |
+ 
+-下面的命令在空的 `calibration-demo` 目录生成一份眼在手上样例，然后求解手眼变换并给出下一拍的推荐排序。生成 `eye-to-hand` 样例时使用另一个空目录。
++`requirements.txt` 列出直接依赖；`requirements-lock.txt` 保存这次成功安装的全部版本，便于复现。复现环境时先创建 `.venv`，再执行：
+ 
+ ```powershell
+-$demo = '.\calibration-demo'
+-python -m robot_calibration demo eye-in-hand $demo
+-python -m robot_calibration intrinsics --images "$demo\images" --out "$demo\calculated-intrinsics.json"
+-python -m robot_calibration hand-eye eye-in-hand --images "$demo\images" --poses "$demo\poses.json" --intrinsics "$demo\intrinsics.json" --truth "$demo\truth.json" --out "$demo\hand-eye.json"
+-python -m robot_calibration recommend --calibration "$demo\hand-eye.json" --images "$demo\images" --poses "$demo\poses.json" --candidates "$demo\candidate_poses.json" --out "$demo\recommendation.json"
++.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
++.\.venv\Scripts\python.exe -m pytest -q
+ ```
+ 
+-`recommend` 从眼在手上结果恢复棋盘格在基座中的估计位姿，先筛除预测出画或边距不足的候选，再按对旋转采样方向的补充排序。候选文件使用 `candidates` 数组，每项包含唯一的 `id` 和末端到基座的 `matrix`，坐标与单位字段和位姿文件一致。推荐结果仅用于离线评估，实机执行前仍需由控制器检查可达性与路径。
+-
+-### 研究仿真与测试
++若有明确需求更新依赖，安装验证后再用以下命令重新记录版本：
+ 
+ ```powershell
+-python -m robot_calibration.experiment --trials 40 --seed 42 --out .\rotation-coverage.json
+-python -m unittest discover -s tests -v
++.\.venv\Scripts\python.exe -m pip freeze | Set-Content -Encoding utf8 requirements-lock.txt
+ ```
+ 
+-每轮比较同样 15 组位姿。两组共享转角幅度、平移和视觉噪声，只改变旋转轴分布。JSON 包含逐轮结果、中位数和第 90 百分位，可用于复查采样条件与误差差异。
++## 本次初始化记录
++
++实际检查、安装版本、测试结果和待处理事项见安装完成后生成的 `INITIALIZATION.md`。
+ 
+-原入门仿真可用 `python .\first_handeye_experiment.py --noise-mm 1` 复跑，输出仍为平移误差约 1.910 mm、旋转误差约 0°。该入门实验只给平移输入加噪。
++Git 仓库已有历史，初始化前多份旧代码和文档已在工作区删除；本次按初始化要求创建 README、依赖清单和忽略规则，保留其余已有删除状态。不恢复旧代码、不提交 Git。
+ 
+-## 项目结构
+ 
+-| 路径 | 用途 |
+-|---|---|
+-| `robot_calibration/app.py` | Tkinter 桌面工作台 |
+-| `robot_calibration/calibration.py`、`geometry.py` | 角点、内参、PnP 与手眼求解 |
+-| `robot_calibration/demo.py`、`sampling.py`、`experiment.py` | 可生成演示数据、位姿推荐、旋转覆盖仿真 |
+-| `tests/` | 数据导入、求解与桌面流程测试 |
+-| [任务回顾](./任务回顾.md) | 本轮实现、验证结果和实机准备 |
++## 2026-11-18 夜间科研准备更新
+ 
+-## 后续实机验证
++上面的初始化说明保留为首次初始化记录。当前已增加坐标变换基础模块（src/handeye/）、示例（examples/）及自动测试；尚无标定求解器或自动采样策略。
+ 
+-从一批人工采集的眼在手上数据做离线验证，再接入机器人控制器、路径校验和按图像质量补采。实机对照比较人工选点、固定轨迹和筛选加补采。各组使用相同初始样本、求解器和拍摄预算，并记录失败拍摄与复拍。具备独立基座坐标参考与测量条件时，再评估绝对三维位置误差。
++先查看 [今晚验收报告](reports/tonight_report.md) 和 [学习文档入口](docs/README.md)。
+ 
+-标定坐标约定可参阅 [OpenCV 手眼标定文档](https://docs.opencv.org/4.13.0/d9/d0c/group__calib3d.html)。固定轨迹基线参考冯东远《打磨机器人工具工件高精度自动标定系统开发》（广东工业大学，2025）第 3.4 节。
++```powershell
++.\.venv\Scripts\python.exe examples\basic_transforms.py
++.\.venv\Scripts\python.exe -m pytest -q
++```
+ 
+-## 许可证
++源码采用 src 布局，由 pytest.ini 指定测试导入路径；无需重新安装已有虚拟环境。
++
++
++## M1 V0.1：仿真—求解—误差分析（当前阶段）
++
++已实现理想位姿观测生成、OpenCV PARK/TSAI 求解、噪声和样本量重复实验及实际 CSV/PNG 输出。此前“尚未求解”的段落为历史记录。
++
++阅读 [M1验收报告](reports/M1_development_report.md)、[学习指南](docs/learning_guide.md) 和 [主实验结果](experiments/M1_v0_1/RESULTS.md)。独立审查任务在 reviews/review_request.md；DeepSeek 文献成果不修改。
++
++```powershell
++.\.venv\Scripts\python.exe -m pytest -q --basetemp=.venv\M1-test-temp
++.\.venv\Scripts\python.exe scripts\run_m1.py --config configs\m1_v0_1.json --output experiments\M1_my_reproduction
++```
+ 
+-本项目尚未指定开源许可证。
++输出目录须不存在，程序拒绝覆盖旧数据。当前G表示旧文档的末端E，T_A_B始终为B→A；所有内部长度为米、角为弧度。模型不包含图像测量、视野或机器人可达性，不代表实机精度。
+diff --git a/first_handeye_experiment.py b/first_handeye_experiment.py
+deleted file mode 100644
+index bef6112..0000000
+--- a/first_handeye_experiment.py
++++ /dev/null
+@@ -1,46 +0,0 @@
+-"""眼在手上标定入门实验。在已知答案的仿真中估计相机安装位姿。"""
+-
+-import argparse
+-import numpy as np
+-
+-from robot_calibration.geometry import make_transform, solve_hand_eye, transform_error
+-
+-
+-def main():
+-    parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("--noise-mm", type=float, default=0.0, help="视觉位姿的每轴平移噪声标准差")
+-    args = parser.parse_args()
+-    if not np.isfinite(args.noise_mm) or args.noise_mm < 0:
+-        parser.error("--noise-mm 需要是有限且非负的数值")
+-
+-    rng = np.random.default_rng(42)
+-    true_camera_to_gripper = make_transform(np.array([8, -12, 20]), [30, -20, 70])
+-    board_to_base = np.eye(4)
+-    board_to_base[:3, 3] = [0, 0, 800]
+-
+-    gripper_to_base = []
+-    board_to_camera = []
+-    for _ in range(15):
+-        arm_pose = make_transform(rng.uniform(-18, 18, 3), rng.uniform(-60, 60, 3))
+-        # 标定板固定：末端到基座 × 相机到末端 × 板到相机 = 板到基座。
+-        observed_board = np.linalg.solve(arm_pose @ true_camera_to_gripper, board_to_base)
+-        gripper_to_base.append(arm_pose)
+-        board_to_camera.append(observed_board)
+-
+-    for observed_board in board_to_camera:
+-        observed_board[:3, 3] += rng.normal(0, args.noise_mm, 3)
+-
+-    rotation, translation = solve_hand_eye(gripper_to_base, board_to_camera)
+-    estimated = np.eye(4)
+-    estimated[:3, :3] = rotation
+-    estimated[:3, 3] = translation
+-    error = transform_error(true_camera_to_gripper, estimated)
+-
+-    print(f"仿真采样：{len(gripper_to_base)} 组 | 视觉平移噪声：{args.noise_mm:g} mm（每轴标准差）")
+-    print("相机在末端坐标系下的真实位置 (mm)：", true_camera_to_gripper[:3, 3])
+-    print("相机在末端坐标系下的估计位置 (mm)：", np.round(translation, 6))
+-    print(f"平移误差：{error['translation_mm']:.6f} mm | 旋转误差：{error['rotation_deg']:.6f} 度")
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/requirements.txt b/requirements.txt
+index d32e55f..b00c06e 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,2 +1,6 @@
+-numpy==2.4.6
+-opencv-python==5.0.0.93
++# Direct dependencies; exact installed versions are saved in requirements-lock.txt.
++numpy
++scipy
++opencv-python
++matplotlib
++pytest
+diff --git a/robot_calibration/__init__.py b/robot_calibration/__init__.py
+deleted file mode 100644
+index 7745cd1..0000000
+--- a/robot_calibration/__init__.py
++++ /dev/null
+@@ -1 +0,0 @@
+-"""Offline camera and robot hand–eye calibration."""
+diff --git a/robot_calibration/__main__.py b/robot_calibration/__main__.py
+deleted file mode 100644
+index 0b6be99..0000000
+--- a/robot_calibration/__main__.py
++++ /dev/null
+@@ -1,82 +0,0 @@
+-"""GUI and command-line entry points for the calibration workbench."""
+-
+-import argparse
+-from pathlib import Path
+-
+-import cv2
+-import numpy as np
+-
+-from .calibration import CalibrationError, Chessboard, Intrinsics, calibrate_intrinsics, compare_truth, estimate_mount
+-from .data import list_images, load_pose_pairs, read_json, write_json
+-from .demo import generate_demo
+-from .geometry import MODES
+-from .sampling import load_candidates, recommend_poses
+-
+-
+-def main():
+-    parser = argparse.ArgumentParser(description="机器人相机标定工作台")
+-    commands = parser.add_subparsers(dest="command")
+-    commands.add_parser("gui", help="打开桌面工作台")
+-    demo = commands.add_parser("demo", help="生成一组含模拟图像的演示数据")
+-    demo.add_argument("mode", choices=MODES)
+-    demo.add_argument("directory", type=Path)
+-    recommend = commands.add_parser("recommend", help="离线筛选并排序眼在手上候选位姿")
+-    recommend.add_argument("--calibration", type=Path, required=True)
+-    recommend.add_argument("--poses", type=Path, required=True)
+-    recommend.add_argument("--images", type=Path, required=True)
+-    recommend.add_argument("--candidates", type=Path, required=True)
+-    recommend.add_argument("--out", type=Path, required=True)
+-    recommend.add_argument("--min-margin-px", type=float, default=18.0)
+-    intrinsics_parser = commands.add_parser("intrinsics", help="标定单目相机内参")
+-    hand_eye = commands.add_parser("hand-eye", help="估计手眼变换")
+-    hand_eye.add_argument("mode", choices=MODES)
+-    hand_eye.add_argument("--poses", type=Path, required=True)
+-    hand_eye.add_argument("--intrinsics", type=Path, required=True)
+-    hand_eye.add_argument("--max-reprojection-px", type=float, default=1.0)
+-    hand_eye.add_argument("--truth", type=Path, help="与演示真值比较")
+-    for command in (intrinsics_parser, hand_eye):
+-        command.add_argument("--images", type=Path, required=True)
+-        command.add_argument("--out", type=Path, required=True)
+-        command.add_argument("--columns", type=int, default=9, help="每行内角点数")
+-        command.add_argument("--rows", type=int, default=6, help="每列内角点数")
+-        command.add_argument("--square-mm", type=float, default=24.0, help="方格边长（毫米）")
+-
+-    args = parser.parse_args()
+-    try:
+-        if args.command in (None, "gui"):
+-            from .app import launch
+-
+-            launch()
+-            return
+-        if args.command == "demo":
+-            print(generate_demo(args.directory, args.mode).resolve())
+-            return
+-        if args.command == "recommend":
+-            ranking = recommend_poses(
+-                read_json(args.calibration), load_pose_pairs(args.poses, args.images),
+-                load_candidates(read_json(args.candidates)), args.min_margin_px,
+-            )
+-            write_json(args.out, ranking)
+-            print(f"视野通过 {len(ranking['ranked'])}，拒绝 {len(ranking['rejected'])}。输出 {args.out.resolve()}")
+-            return
+-        board = Chessboard(args.columns, args.rows, args.square_mm)
+-        if args.command == "intrinsics":
+-            result = calibrate_intrinsics(list_images(args.images), board)
+-        else:
+-            intrinsics = Intrinsics.from_record(read_json(args.intrinsics))
+-            pairs = load_pose_pairs(args.poses, args.images)
+-            result = estimate_mount(args.mode, pairs, board, intrinsics, args.max_reprojection_px)
+-            if args.truth:
+-                result["synthetic_truth_error"] = compare_truth(result, read_json(args.truth))
+-        write_json(args.out, result)
+-        print(f"有效观测 {sum(view['accepted'] for view in result['views'])} / {len(result['views'])}")
+-        print(f"结果已写入 {args.out.resolve()}")
+-    except CalibrationError as exc:
+-        reasons = [f"  {view['image']}：{view['reason']}" for view in exc.views if view.get("reason")]
+-        parser.exit(1, f"标定失败：{exc}\n" + "\n".join(reasons) + "\n")
+-    except (ValueError, OSError, cv2.error, np.linalg.LinAlgError) as exc:
+-        parser.exit(1, f"标定失败：{exc}\n")
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/robot_calibration/app.py b/robot_calibration/app.py
+deleted file mode 100644
+index cfb6a44..0000000
+--- a/robot_calibration/app.py
++++ /dev/null
+@@ -1,485 +0,0 @@
+-"""Tk desktop workbench for importing, inspecting and exporting calibration jobs."""
+-
+-import base64
+-from concurrent.futures import ThreadPoolExecutor
+-from pathlib import Path
+-from tempfile import TemporaryDirectory
+-import tkinter as tk
+-from tkinter import filedialog, messagebox, ttk
+-
+-import cv2
+-import numpy as np
+-
+-from .calibration import (
+-    CalibrationError, Chessboard, Intrinsics, calibrate_intrinsics, compare_truth, estimate_mount, read_image,
+-)
+-from .data import list_images, load_pose_pairs, read_json, write_json
+-from .demo import DEMO_BOARD, generate_demo
+-
+-
+-MODES = {
+-    "intrinsics": ("相机内参", "导入多张棋盘格照片，计算相机内参和畸变。"),
+-    "eye-in-hand": ("眼在手上", "相机随末端运动，棋盘格固定。输出相机 → 末端。"),
+-    "eye-to-hand": ("眼在手外", "相机固定，棋盘格随末端运动。输出相机 → 基座。"),
+-}
+-
+-BG = "#edf2f7"
+-CARD = "#ffffff"
+-DARK = "#13263b"
+-INK = "#182c42"
+-MUTED = "#50657b"
+-ACCENT = "#0e6859"
+-PALE = "#e5f3ee"
+-BORDER = "#dce5ed"
+-FONT = ("Microsoft YaHei UI", 10)
+-
+-
+-class Workbench:
+-    def __init__(self, window, demo_root, executor):
+-        self.window = window
+-        self.demo_root = Path(demo_root)
+-        self.executor = executor
+-        self.mode = "eye-in-hand"
+-        self.images = None
+-        self.poses = None
+-        self.intrinsics = None
+-        self.truth = None
+-        self.latest_intrinsics = None
+-        self.result = None
+-        self.failed_views = None
+-        self.image_paths = {}
+-        self.preview_image = None
+-        self.busy = False
+-        self.controls = []
+-        self.mode_buttons = {}
+-        self.board_vars = [tk.StringVar(value=str(value)) for value in (9, 6, 24)]
+-        self.threshold = tk.StringVar(value="1.0")
+-        self.status = tk.StringVar(value="请选择数据，或先载入演示数据。")
+-        self.sample_count = tk.StringVar(value="0 张照片")
+-
+-        window.title("Robot Auto Calibration · 机器人相机标定")
+-        window.geometry("1180x780")
+-        window.minsize(990, 690)
+-        window.configure(bg=BG)
+-        window.option_add("*Font", FONT)
+-        self._theme()
+-        self._layout()
+-        self._refresh_inputs()
+-
+-    def _theme(self):
+-        style = ttk.Style(self.window)
+-        style.theme_use("clam")
+-        style.configure(
+-            "Calibration.Treeview", font=FONT, rowheight=29,
+-            background=CARD, fieldbackground=CARD, foreground=INK, borderwidth=0
+-        )
+-        style.configure(
+-            "Calibration.Treeview.Heading", font=(FONT[0], 10, "bold"),
+-            background=BG, foreground=INK, relief="flat", padding=6
+-        )
+-        style.map("Calibration.Treeview", background=[("selected", PALE)], foreground=[("selected", INK)])
+-
+-    @staticmethod
+-    def _label(parent, text="", *, color=INK, bg=CARD, size=10, weight="normal", **kwargs):
+-        return tk.Label(parent, text=text, fg=color, bg=bg, font=(FONT[0], size, weight), **kwargs)
+-
+-    def _button(self, parent, label, action, *, primary=False, small=False):
+-        button = tk.Button(
+-            parent, text=label, command=action, relief="flat", bd=0, cursor="hand2",
+-            padx=10 if small else 15, pady=5 if small else 8,
+-            bg=ACCENT if primary else PALE, fg=CARD if primary else ACCENT,
+-            activebackground="#075447" if primary else "#d6ebe4",
+-            activeforeground=CARD if primary else INK,
+-            disabledforeground="#8b9ba4", font=(FONT[0], 10, "bold"),
+-        )
+-        self.controls.append(button)
+-        return button
+-
+-    def _layout(self):
+-        header = tk.Frame(self.window, bg=DARK, padx=26, pady=17)
+-        header.pack(fill="x")
+-        self._label(header, "机器人相机标定", color=CARD, bg=DARK, size=21, weight="bold").pack(side="left")
+-        self._button(header, "载入演示数据", self.load_demo, primary=True).pack(side="right")
+-
+-        body = tk.Frame(self.window, bg=BG, padx=22, pady=17)
+-        body.pack(fill="both", expand=True)
+-        body.columnconfigure(0, minsize=326)
+-        body.columnconfigure(1, weight=1)
+-        body.rowconfigure(1, weight=1)
+-        nav = tk.Frame(body, bg=BG)
+-        nav.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 13))
+-        for mode, (label, _) in MODES.items():
+-            button = self._button(nav, label, lambda value=mode: self.select_mode(value))
+-            button.pack(side="left", padx=(0, 8))
+-            self.mode_buttons[mode] = button
+-
+-        sidebar = tk.Frame(body, bg=CARD, padx=17, pady=16, highlightbackground=BORDER, highlightthickness=1)
+-        sidebar.grid(row=1, column=0, sticky="nsew", padx=(0, 14))
+-        self._label(sidebar, "数据输入", size=14, weight="bold").pack(anchor="w")
+-        self.mode_hint = self._label(sidebar, color=MUTED, wraplength=265, justify="left", anchor="w")
+-        self.mode_hint.pack(fill="x", pady=(5, 14))
+-
+-        self.photo_row, self.photo_hint = self._file_input(sidebar, "图像目录", self.choose_images)
+-        self.pose_row, self.pose_hint = self._file_input(sidebar, "末端位姿 JSON", self.choose_poses)
+-        self.intrinsic_row, self.intrinsic_hint = self._file_input(sidebar, "相机内参 JSON", self.choose_intrinsics)
+-        self.last_intrinsics = self._button(sidebar, "使用本次计算的内参", self.use_last_intrinsics, small=True)
+-        self.last_intrinsics.pack(anchor="w", pady=(0, 8))
+-
+-        self._label(sidebar, "棋盘格 · 内角点数", weight="bold").pack(anchor="w", pady=(6, 5))
+-        board_box = tk.Frame(sidebar, bg=CARD)
+-        board_box.pack(fill="x")
+-        for index, (title, value) in enumerate(zip(("列", "行", "格边长 (mm)"), self.board_vars, strict=True)):
+-            field = tk.Frame(board_box, bg=CARD)
+-            field.grid(row=0, column=index, sticky="ew", padx=(0, 8))
+-            self._label(field, title, color=MUTED, size=9).pack(anchor="w")
+-            self._entry(field, value, 8).pack(anchor="w", pady=(2, 0))
+-
+-        self.threshold_row = tk.Frame(sidebar, bg=CARD)
+-        self.threshold_row.pack(fill="x", pady=(13, 0))
+-        self._label(self.threshold_row, "重投影误差上限 (px)", color=MUTED).pack(side="left")
+-        self._entry(self.threshold_row, self.threshold, 7).pack(side="right")
+-
+-        self.actions = tk.Frame(sidebar, bg=CARD)
+-        self.actions.pack(side="bottom", fill="x", pady=(12, 0))
+-        self._button(self.actions, "运行标定", self.run, primary=True).pack(side="left", fill="x", expand=True, padx=(0, 8))
+-        self.export = self._button(self.actions, "导出 JSON", self.export_result)
+-        self.export.pack(side="right")
+-
+-        right = tk.Frame(body, bg=BG)
+-        right.grid(row=1, column=1, sticky="nsew")
+-        right.columnconfigure(0, weight=1)
+-        right.rowconfigure(1, weight=1)
+-        cards = tk.Frame(right, bg=BG)
+-        cards.grid(row=0, column=0, sticky="ew", pady=(0, 12))
+-        cards.columnconfigure(0, weight=1, uniform="top")
+-        cards.columnconfigure(1, weight=1, uniform="top")
+-
+-        visual = tk.Frame(cards, bg=DARK, padx=12, pady=10)
+-        visual.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+-        self._label(visual, "图像预览", color="#d2e1eb", bg=DARK, weight="bold").pack(anchor="w")
+-        self.canvas = tk.Canvas(visual, bg="#1b344c", height=185, highlightthickness=0)
+-        self.canvas.pack(fill="x", pady=(7, 2))
+-        self.preview_path = None
+-        self.canvas.bind("<Configure>", lambda _event: self._preview(self.preview_path))
+-
+-        outcome = tk.Frame(cards, bg=CARD, padx=14, pady=12, highlightbackground=BORDER, highlightthickness=1)
+-        outcome.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+-        self._label(outcome, "标定结果", size=14, weight="bold").pack(anchor="w")
+-        self.summary = self._label(outcome, color=MUTED, anchor="nw", justify="left", wraplength=325)
+-        self.summary.pack(fill="both", expand=True, anchor="w", pady=(9, 0))
+-        self.summary.bind("<Configure>", lambda event: self.summary.configure(wraplength=max(170, event.width - 5)))
+-
+-        samples = tk.Frame(right, bg=CARD, padx=13, pady=12, highlightbackground=BORDER, highlightthickness=1)
+-        samples.grid(row=1, column=0, sticky="nsew")
+-        samples.rowconfigure(1, weight=1)
+-        samples.columnconfigure(0, weight=1)
+-        row_header = tk.Frame(samples, bg=CARD)
+-        row_header.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 8))
+-        self._label(row_header, "样本检查", size=14, weight="bold").pack(side="left")
+-        self._label(row_header, textvariable=self.sample_count, color=MUTED).pack(side="right")
+-        self.table = ttk.Treeview(samples, columns=("state", "error", "reason"), style="Calibration.Treeview", selectmode="browse")
+-        for column, label, width in (("#0", "图像", 128), ("state", "状态", 65), ("error", "RMS (px)", 90), ("reason", "原因", 200)):
+-            self.table.heading(column, text=label, anchor="w")
+-            self.table.column(column, width=width, minwidth=50, stretch=column in ("#0", "reason"))
+-        self.table.tag_configure("rejected", foreground="#9a4336")
+-        self.table.bind("<<TreeviewSelect>>", self._select_photo)
+-        self.table.grid(row=1, column=0, sticky="nsew")
+-        scroller = ttk.Scrollbar(samples, command=self.table.yview)
+-        scroller.grid(row=1, column=1, sticky="ns")
+-        self.table.configure(yscrollcommand=scroller.set)
+-
+-        footer = self._label(self.window, textvariable=self.status, bg=BG, color=MUTED, anchor="w", padx=23)
+-        footer.pack(fill="x", pady=(0, 10))
+-
+-    def _file_input(self, parent, title, action):
+-        row = tk.Frame(parent, bg=CARD)
+-        row.pack(fill="x", pady=(0, 9))
+-        self._label(row, title, weight="bold").pack(side="top", anchor="w")
+-        values = tk.Frame(row, bg=CARD)
+-        values.pack(fill="x", pady=(3, 0))
+-        label = self._label(values, color=MUTED, wraplength=195, justify="left", anchor="w")
+-        label.pack(side="left", fill="x", expand=True)
+-        self._button(values, "选择", action, small=True).pack(side="right")
+-        return row, label
+-
+-    def _entry(self, parent, variable, width):
+-        box = tk.Entry(
+-            parent, textvariable=variable, width=width, relief="flat", bd=4, bg=BG,
+-            fg=INK, highlightthickness=1, highlightbackground=BORDER, highlightcolor=ACCENT,
+-        )
+-        self.controls.append(box)
+-        variable.trace_add("write", lambda *_: self._reset_result())
+-        return box
+-
+-    def _refresh_inputs(self):
+-        self.mode_hint.configure(text=MODES[self.mode][1])
+-        for mode, button in self.mode_buttons.items():
+-            button.configure(bg=ACCENT if mode == self.mode else PALE, fg=CARD if mode == self.mode else ACCENT)
+-        if self.mode == "intrinsics":
+-            for widget in (self.pose_row, self.intrinsic_row, self.last_intrinsics, self.threshold_row):
+-                widget.pack_forget()
+-        else:
+-            self.pose_row.pack(fill="x", after=self.photo_row, pady=(0, 9))
+-            self.intrinsic_row.pack(fill="x", after=self.pose_row, pady=(0, 9))
+-            self.last_intrinsics.pack(anchor="w", after=self.intrinsic_row, pady=(0, 8))
+-            self.threshold_row.pack(fill="x", pady=(13, 0), before=self.actions)
+-        self.photo_hint.configure(text=self.images.name if self.images else "尚未选择图像目录")
+-        self.pose_hint.configure(text=self.poses.name if self.poses else "按图像文件名配对")
+-        intrinsic_name = self.intrinsics.name if isinstance(self.intrinsics, Path) else "本次计算的内参"
+-        self.intrinsic_hint.configure(text=intrinsic_name if self.intrinsics is not None else "导入已知相机内参")
+-        self.last_intrinsics.configure(state="normal" if self.latest_intrinsics and not self.busy else "disabled")
+-        self.export.configure(state="normal" if self.result and not self.busy else "disabled")
+-
+-    def _reset_result(self):
+-        self.result = None
+-        self.failed_views = None
+-        if hasattr(self, "summary"):
+-            self.summary.configure(text="运行后显示标定参数和误差。")
+-            self.export.configure(state="disabled")
+-            self._update_table()
+-
+-    def select_mode(self, mode):
+-        if mode == self.mode or self.busy:
+-            return
+-        self.mode = mode
+-        if self.truth:
+-            self.images = self.poses = self.intrinsics = self.truth = None
+-        self._reset_result()
+-        self._refresh_inputs()
+-        if self.images is None:
+-            self._preview(None)
+-        self.status.set(f"已选择{MODES[mode][0]}。")
+-
+-    def choose_images(self):
+-        chosen = filedialog.askdirectory(parent=self.window, title="选择棋盘格照片目录")
+-        if chosen:
+-            self.images, self.truth = Path(chosen), None
+-            self._reset_result()
+-            self._refresh_inputs()
+-            self._preview_first()
+-
+-    def _choose_json(self, title):
+-        chosen = filedialog.askopenfilename(parent=self.window, title=title, filetypes=[("JSON", "*.json")])
+-        return Path(chosen) if chosen else None
+-
+-    def choose_poses(self):
+-        chosen = self._choose_json("选择图像与末端位姿配对文件")
+-        if chosen:
+-            self.poses, self.truth = chosen, None
+-            self._reset_result()
+-            self._refresh_inputs()
+-
+-    def choose_intrinsics(self):
+-        chosen = self._choose_json("选择相机内参文件")
+-        if chosen:
+-            self.intrinsics, self.truth = chosen, None
+-            self._reset_result()
+-            self._refresh_inputs()
+-
+-    def use_last_intrinsics(self):
+-        self.intrinsics, self.truth = self.latest_intrinsics, None
+-        self._reset_result()
+-        self._refresh_inputs()
+-
+-    def load_demo(self):
+-        mode = "eye-in-hand" if self.mode == "intrinsics" else self.mode
+-        folder = self.demo_root / mode
+-
+-        def prepare():
+-            if not (folder / "truth.json").exists():
+-                generate_demo(folder, mode)
+-            return folder
+-
+-        self._start(prepare, self._demo_loaded, "正在生成演示数据…")
+-
+-    def _demo_loaded(self, directory):
+-        for variable, value in zip(self.board_vars, (DEMO_BOARD.columns, DEMO_BOARD.rows, DEMO_BOARD.square_mm), strict=True):
+-            variable.set(str(value))
+-        self.threshold.set("1.0")
+-        self.images = directory / "images"
+-        self.poses = directory / "poses.json"
+-        self.intrinsics = directory / "intrinsics.json"
+-        self.truth = directory / "truth.json"
+-        self._reset_result()
+-        self._refresh_inputs()
+-        self._preview_first()
+-        self.status.set("已载入 15 张模拟照片。点击「运行标定」查看结果。")
+-
+-    def run(self):
+-        try:
+-            if self.images is None:
+-                raise ValueError("请先选择棋盘格照片所在目录。")
+-            values = [field.get() for field in self.board_vars]
+-            try:
+-                board = Chessboard(int(values[0]), int(values[1]), float(values[2]))
+-            except ValueError as exc:
+-                raise ValueError("请检查棋盘格的内角点列数、行数和方格边长。") from exc
+-            mode, image_directory = self.mode, self.images
+-            poses, intrinsics, truth = self.poses, self.intrinsics, self.truth
+-            threshold = 1.0
+-            if mode != "intrinsics":
+-                if poses is None or intrinsics is None:
+-                    raise ValueError("手眼标定需要末端位姿文件和相机内参。")
+-                try:
+-                    threshold = float(self.threshold.get())
+-                except ValueError as exc:
+-                    raise ValueError("重投影误差上限应填写数值。") from exc
+-        except ValueError as exc:
+-            self._show_error(exc)
+-            return
+-
+-        def calibrate():
+-            if mode == "intrinsics":
+-                return calibrate_intrinsics(list_images(image_directory), board)
+-            data = read_json(intrinsics) if isinstance(intrinsics, Path) else intrinsics
+-            pairs = load_pose_pairs(poses, image_directory)
+-            result = estimate_mount(mode, pairs, board, Intrinsics.from_record(data), threshold)
+-            if truth is not None:
+-                result["synthetic_truth_error"] = compare_truth(result, read_json(truth))
+-            return result
+-
+-        self._reset_result()
+-        self._start(calibrate, self._show_result, "正在检测角点和计算标定参数…")
+-
+-    def _start(self, operation, on_success, label):
+-        self.busy = True
+-        self.status.set(label)
+-        for control in self.controls:
+-            control.configure(state="disabled")
+-        future = self.executor.submit(operation)
+-
+-        def check():
+-            if not future.done():
+-                self.window.after(80, check)
+-                return
+-            self.busy = False
+-            for control in self.controls:
+-                control.configure(state="normal")
+-            self._refresh_inputs()
+-            try:
+-                on_success(future.result())
+-            except Exception as exc:
+-                self._show_error(exc)
+-
+-        self.window.after(80, check)
+-
+-    def _show_error(self, error):
+-        if isinstance(error, CalibrationError):
+-            self.failed_views = error.views
+-            self._update_table()
+-            self.status.set("求解未完成。样本检查表保留了本次图像的处理结果。")
+-        else:
+-            self.status.set("操作未完成。请根据提示检查输入后重试。")
+-        messagebox.showerror("标定工作台", str(error), parent=self.window)
+-
+-    def _show_result(self, result):
+-        self.result = result
+-        if self.mode == "intrinsics":
+-            self.latest_intrinsics = result
+-            matrix = result["camera_matrix"]
+-            summary = (
+-                f"整体重投影误差  {result['reprojection_rms_px']:.4f} px\n\n"
+-                f"焦距 fx / fy  {matrix[0][0]:.2f} / {matrix[1][1]:.2f} px\n"
+-                f"主点 cx / cy  {matrix[0][2]:.2f} / {matrix[1][2]:.2f} px\n\n"
+-                "内参矩阵与畸变系数可导出为 JSON。"
+-            )
+-        else:
+-            matrix = np.asarray(result["matrix"])
+-            translation = matrix[:3, 3]
+-            rotation = np.rad2deg(cv2.Rodrigues(matrix[:3, :3])[0]).ravel()
+-            destination = "末端" if result["to_frame"] == "gripper" else "基座"
+-            spread = result["in_sample_consistency"]
+-            summary = (
+-                f"相机 → {destination}\n"
+-                f"平移 X / Y / Z (mm)\n{' / '.join(f'{value:.3f}' for value in translation)}\n"
+-                f"旋转向量 (°)\n{' / '.join(f'{value:.3f}' for value in rotation)}\n\n"
+-                f"拟合样本板位置离散  {spread['position_rms_about_centroid_mm']:.3f} mm\n"
+-                f"拟合样本板姿态离散  {spread['mean_pairwise_rotation_deg']:.3f}°"
+-            )
+-            if "synthetic_truth_error" in result:
+-                error = result["synthetic_truth_error"]
+-                summary += f"\n\n仿真真值误差  {error['translation_mm']:.3f} mm / {error['rotation_deg']:.3f}°"
+-        self.summary.configure(text=summary)
+-        self._refresh_inputs()
+-        self._update_table()
+-        self.status.set("标定完成。可选择任一样本预览，或导出全部参数和质检结果。")
+-
+-    def _update_table(self):
+-        self.table.delete(*self.table.get_children())
+-        self.image_paths = {}
+-        if self.images is None:
+-            self.sample_count.set("0 张照片")
+-            return
+-        try:
+-            files = list_images(self.images)
+-        except OSError:
+-            self.sample_count.set("无法读取图像目录")
+-            return
+-        self.image_paths = {path.name: path for path in files}
+-        records = self.result["views"] if self.result else self.failed_views
+-        inspected = records is not None
+-        if not inspected:
+-            records = [{"image": name} for name in self.image_paths]
+-        for record in records:
+-            accepted = record.get("accepted")
+-            error = record.get("reprojection_rms_px")
+-            values = (
+-                "待检查" if accepted is None else "有效" if accepted else "拒绝",
+-                f"{error:.4f}" if error is not None else "—", record.get("reason", ""),
+-            )
+-            self.table.insert("", "end", text=record["image"], values=values, tags=("rejected",) if accepted is False else ())
+-        if inspected:
+-            self.sample_count.set(f"有效 {sum(row['accepted'] for row in records)} / {len(records)}")
+-        else:
+-            self.sample_count.set(f"{len(records)} 张照片")
+-
+-    def _select_photo(self, _event):
+-        selection = self.table.selection()
+-        if selection:
+-            self._preview(self.image_paths.get(self.table.item(selection[0], "text")))
+-
+-    def _preview_first(self):
+-        self._preview(next(iter(self.image_paths.values()), None))
+-
+-    def _preview(self, path):
+-        self.preview_path = path
+-        self.canvas.delete("all")
+-        width, height = self.canvas.winfo_width(), self.canvas.winfo_height()
+-        if width < 20 or height < 20:
+-            return
+-        label = "选择图像目录后预览照片"
+-        if path:
+-            try:
+-                image = read_image(path, color=True)
+-                scale = min(width / image.shape[1], height / image.shape[0])
+-                resized = cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+-                success, encoded = cv2.imencode(".png", resized)
+-                if success:
+-                    self.preview_image = tk.PhotoImage(data=base64.b64encode(encoded))
+-                    self.canvas.create_image(width // 2, height // 2, image=self.preview_image)
+-                    return
+-            except (OSError, ValueError, cv2.error, tk.TclError):
+-                pass
+-            label = "该图像无法预览"
+-        self.canvas.create_text(width // 2, height // 2, text=label, fill="#bdcfdf", font=FONT)
+-
+-    def export_result(self):
+-        if self.result is None:
+-            return
+-        chosen = filedialog.asksaveasfilename(
+-            parent=self.window, defaultextension=".json", filetypes=[("JSON", "*.json")],
+-            initialfile=f"{self.mode}-result.json", title="导出标定结果",
+-        )
+-        if chosen:
+-            try:
+-                write_json(chosen, self.result)
+-                self.status.set(f"已导出 {Path(chosen).name}。")
+-            except (OSError, ValueError) as exc:
+-                self._show_error(exc)
+-
+-
+-def launch():
+-    window = tk.Tk()
+-    with TemporaryDirectory(prefix="robot-calibration-") as demo_root, ThreadPoolExecutor(max_workers=1) as executor:
+-        Workbench(window, demo_root, executor)
+-        window.mainloop()
+diff --git a/robot_calibration/calibration.py b/robot_calibration/calibration.py
+deleted file mode 100644
+index 3bfdff9..0000000
+--- a/robot_calibration/calibration.py
++++ /dev/null
+@@ -1,253 +0,0 @@
+-"""Chessboard detection, camera intrinsics and offline hand–eye calibration."""
+-
+-from dataclasses import dataclass
+-from itertools import combinations
+-from pathlib import Path
+-
+-import cv2
+-import numpy as np
+-
+-from .geometry import MODES, checked_transform, rotation_angle_deg, solve_mount, transform_error
+-
+-
+-class CalibrationError(ValueError):
+-    def __init__(self, message, views):
+-        super().__init__(message)
+-        self.views = views
+-
+-
+-@dataclass(frozen=True)
+-class Chessboard:
+-    columns: int = 9
+-    rows: int = 6
+-    square_mm: float = 24.0
+-
+-    def __post_init__(self):
+-        if type(self.columns) is not int or type(self.rows) is not int or min(self.columns, self.rows) < 3:
+-            raise ValueError("棋盘格至少需要 3 列和 3 行内角点。")
+-        if type(self.square_mm) not in (float, int) or not np.isfinite(self.square_mm) or self.square_mm <= 0:
+-            raise ValueError("方格边长必须是毫米为单位的正数。")
+-
+-    @property
+-    def pattern(self):
+-        return self.columns, self.rows
+-
+-    def points(self):
+-        points = np.zeros((self.rows * self.columns, 3), dtype=np.float32)
+-        points[:, :2] = np.indices((self.rows, self.columns))[::-1].reshape(2, -1).T * self.square_mm
+-        return points
+-
+-
+-@dataclass(frozen=True)
+-class Intrinsics:
+-    matrix: np.ndarray
+-    distortion: np.ndarray
+-    image_size: tuple[int, int]
+-
+-    @classmethod
+-    def from_record(cls, record):
+-        try:
+-            matrix = np.asarray(record["camera_matrix"], dtype=float)
+-            distortion = np.asarray(record["distortion"], dtype=float).ravel()
+-            size = record["image_size"]
+-        except (KeyError, TypeError, ValueError, OverflowError) as exc:
+-            raise ValueError("内参 JSON 应包含 camera_matrix、distortion 和 image_size。") from exc
+-        if (
+-            matrix.shape != (3, 3) or not np.isfinite(matrix).all()
+-            or matrix[0, 0] <= 0 or matrix[1, 1] <= 0
+-            or not np.allclose(matrix[[0, 1, 2, 2, 2], [1, 0, 0, 1, 2]], [0, 0, 0, 0, 1])
+-        ):
+-            raise ValueError("camera_matrix 必须是有效的 3 × 3 针孔相机内参矩阵。")
+-        if distortion.size not in {4, 5, 8, 12, 14} or not np.isfinite(distortion).all():
+-            raise ValueError("distortion 必须是 4、5、8、12 或 14 个有限数值。")
+-        if not isinstance(size, list) or len(size) != 2 or any(type(n) is not int or n < 1 for n in size):
+-            raise ValueError("image_size 必须是两个正整数 [宽, 高]。")
+-        return cls(matrix, distortion, tuple(size))
+-
+-    def record(self):
+-        return {
+-            "camera_matrix": self.matrix.tolist(),
+-            "distortion": self.distortion.ravel().tolist(),
+-            "image_size": list(self.image_size),
+-        }
+-
+-
+-def read_image(path, color=False):
+-    data = np.fromfile(path, dtype=np.uint8)
+-    flag = cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE
+-    image = cv2.imdecode(data, flag) if data.size else None
+-    if image is None:
+-        raise ValueError("无法解码图像")
+-    return image
+-
+-
+-def find_corners(gray, board, orient=False):
+-    found, corners = cv2.findChessboardCornersSB(gray, board.pattern, flags=cv2.CALIB_CB_NORMALIZE_IMAGE)
+-    if not found:
+-        raise ValueError("未检测到完整棋盘格")
+-    if orient:
+-        # Opposite outer squares differ in intensity when one inner dimension is odd.
+-        grid = corners.reshape(board.rows, board.columns, 2)
+-        first = grid[0, 0] + 0.45 * (2 * grid[0, 0] - grid[0, 1] - grid[1, 0])
+-        last = grid[-1, -1] + 0.45 * (2 * grid[-1, -1] - grid[-1, -2] - grid[-2, -1])
+-        samples = []
+-        for xy in (first, last):
+-            x, y = np.round(xy).astype(int)
+-            if not (1 <= x < gray.shape[1] - 1 and 1 <= y < gray.shape[0] - 1):
+-                raise ValueError("棋盘格边缘出画，无法统一角点方向")
+-            samples.append(float(np.median(gray[y - 1:y + 2, x - 1:x + 2])))
+-        if abs(samples[0] - samples[1]) < 20:
+-            raise ValueError("棋盘格两端对比度不足，无法统一角点方向")
+-        if samples[0] > samples[1]:
+-            corners = corners[::-1].copy()
+-    return corners.reshape(-1, 1, 2)
+-
+-
+-def reprojection_rms(points, corners, rotation_vector, translation, intrinsics):
+-    projected, _ = cv2.projectPoints(points, rotation_vector, translation, intrinsics.matrix, intrinsics.distortion)
+-    differences = projected.reshape(-1, 2) - corners.reshape(-1, 2)
+-    return float(np.sqrt(np.mean(np.sum(differences**2, axis=1))))
+-
+-
+-def check_image(path, board, expected_size=None, orient=False):
+-    path = Path(path)
+-    entry = {"image": path.name, "accepted": False}
+-    try:
+-        gray = read_image(path)
+-        size = gray.shape[1], gray.shape[0]
+-        if expected_size is not None and size != expected_size:
+-            raise ValueError(f"图像尺寸 {size[0]} × {size[1]} 与 {expected_size[0]} × {expected_size[1]} 不一致")
+-        corners = find_corners(gray, board, orient)
+-    except (OSError, ValueError, cv2.error) as exc:
+-        entry["reason"] = str(exc)
+-        return entry, None, None
+-    entry["accepted"] = True
+-    return entry, corners, size
+-
+-
+-def calibrate_intrinsics(paths, board):
+-    records = []
+-    accepted = []
+-    corners = []
+-    image_size = None
+-    points = board.points()
+-    for path in paths:
+-        entry, observed, size = check_image(path, board, image_size)
+-        records.append(entry)
+-        if entry["accepted"]:
+-            if any(
+-                min(np.max(np.abs(observed - previous)), np.max(np.abs(observed - previous[::-1]))) < 0.1
+-                for previous in corners
+-            ):
+-                entry.update(accepted=False, reason="角点位置与已有照片重复")
+-                continue
+-            image_size = size
+-            accepted.append(entry)
+-            corners.append(observed)
+-    if len(accepted) < 5:
+-        raise CalibrationError(f"内参标定至少需要 5 张有效照片，目前有效 {len(accepted)} 张。", records)
+-    try:
+-        rms, matrix, distortion, rotations, translations = cv2.calibrateCamera(
+-            [points] * len(accepted), corners, image_size, None, None
+-        )
+-    except cv2.error as exc:
+-        raise CalibrationError("内参未能求解，请补采不同位置和倾角的图像。", records) from exc
+-    if not np.isfinite(rms):
+-        raise CalibrationError("内参求解误差异常，请补采不同位置和倾角的图像。", records)
+-    intrinsics = Intrinsics.from_record(Intrinsics(matrix, distortion, image_size).record())
+-    for entry, corners_i, rotation, translation in zip(accepted, corners, rotations, translations, strict=True):
+-        entry["reprojection_rms_px"] = reprojection_rms(points, corners_i, rotation, translation, intrinsics)
+-    return {
+-        "schema_version": 1, **intrinsics.record(), "reprojection_rms_px": float(rms), "views": records,
+-        "chessboard": {"columns": board.columns, "rows": board.rows, "square_mm": board.square_mm},
+-    }
+-
+-
+-def estimate_mount(mode, paired_paths, board, intrinsics, max_reprojection_px=1.0):
+-    if mode not in MODES:
+-        raise ValueError("请选择有效的手眼标定模式。")
+-    if (board.rows + board.columns) % 2 == 0:
+-        raise ValueError("手眼标定要求棋盘格的内角点行列数一奇一偶，以统一角点方向。")
+-    if not np.isfinite(max_reprojection_px) or max_reprojection_px <= 0:
+-        raise ValueError("重投影误差上限必须是大于零的有限像素值。")
+-
+-    points = board.points()
+-    records, arm_poses, board_poses = [], [], []
+-    for path, arm_pose in paired_paths:
+-        if arm_pose is None:
+-            records.append({"image": path.name, "accepted": False, "reason": "缺少配对的末端位姿"})
+-            continue
+-        entry, corners, _ = check_image(path, board, intrinsics.image_size, orient=True)
+-        records.append(entry)
+-        if not entry["accepted"]:
+-            continue
+-        try:
+-            success, rotation_vector, translation = cv2.solvePnP(
+-                points, corners, intrinsics.matrix, intrinsics.distortion, flags=cv2.SOLVEPNP_ITERATIVE
+-            )
+-        except cv2.error:
+-            entry.update(accepted=False, reason="PnP 无法从该图像估计板位姿")
+-            continue
+-        if not success or not np.isfinite(translation).all() or not np.isfinite(rotation_vector).all():
+-            entry.update(accepted=False, reason="PnP 未得到有效板位姿")
+-            continue
+-        rotation = cv2.Rodrigues(rotation_vector)[0]
+-        if (points @ rotation.T + translation.ravel())[:, 2].min() <= 0:
+-            entry.update(accepted=False, reason="PnP 结果把角点置于相机后方")
+-            continue
+-        error = reprojection_rms(points, corners, rotation_vector, translation, intrinsics)
+-        if not np.isfinite(error):
+-            entry.update(accepted=False, reason="重投影误差无法计算")
+-            continue
+-        entry["reprojection_rms_px"] = error
+-        if error > max_reprojection_px:
+-            entry.update(accepted=False, reason="重投影误差超过设定上限")
+-            continue
+-        observed = np.eye(4)
+-        observed[:3, :3] = rotation
+-        observed[:3, 3] = translation.ravel()
+-        arm_poses.append(arm_pose)
+-        board_poses.append(observed)
+-
+-    if len(arm_poses) < 3:
+-        raise CalibrationError(f"手眼标定至少需要 3 组有效的图像和位姿，目前有效 {len(arm_poses)} 组。", records)
+-    try:
+-        mount, fixed_pose_estimates = solve_mount(mode, arm_poses, board_poses)
+-    except (ValueError, np.linalg.LinAlgError) as exc:
+-        raise CalibrationError(str(exc), records) from exc
+-    positions = np.array([pose[:3, 3] for pose in fixed_pose_estimates])
+-    fixed_board = np.eye(4)
+-    fixed_board[:3, 3] = positions.mean(0)
+-    u, _, vt = np.linalg.svd(np.mean([pose[:3, :3] for pose in fixed_pose_estimates], axis=0))
+-    fixed_board[:3, :3] = u @ np.diag([1, 1, np.linalg.det(u @ vt)]) @ vt
+-    rotation_differences = [
+-        rotation_angle_deg(a[:3, :3].T @ b[:3, :3])
+-        for a, b in combinations(fixed_pose_estimates, 2)
+-    ]
+-    return {
+-        "schema_version": 1,
+-        "mode": mode,
+-        "from_frame": "camera",
+-        "to_frame": MODES[mode],
+-        "length_unit": "mm",
+-        "chessboard": {"columns": board.columns, "rows": board.rows, "square_mm": board.square_mm},
+-        "intrinsics": intrinsics.record(),
+-        "matrix": mount.tolist(),
+-        "fixed_board_estimate": {
+-            "to_frame": "base" if mode == "eye-in-hand" else "gripper", "matrix": fixed_board.tolist(),
+-        },
+-        "max_reprojection_px": max_reprojection_px,
+-        "views": records,
+-        "in_sample_consistency": {
+-            "board_frame": "base" if mode == "eye-in-hand" else "gripper",
+-            "position_rms_about_centroid_mm": float(np.sqrt(np.mean(np.sum((positions - positions.mean(0))**2, axis=1)))),
+-            "mean_pairwise_rotation_deg": float(np.mean(rotation_differences)),
+-        },
+-    }
+-
+-
+-def compare_truth(result, truth):
+-    for key in ("mode", "from_frame", "to_frame", "length_unit"):
+-        if result[key] != truth.get(key):
+-            raise ValueError(f"演示真值中的 {key} 与标定结果不一致。")
+-    return transform_error(checked_transform(truth.get("matrix"), "演示真值"), np.array(result["matrix"]))
+diff --git a/robot_calibration/data.py b/robot_calibration/data.py
+deleted file mode 100644
+index 52b4a26..0000000
+--- a/robot_calibration/data.py
++++ /dev/null
+@@ -1,85 +0,0 @@
+-"""Input and output formats for offline calibration."""
+-
+-import json
+-import os
+-import tempfile
+-from pathlib import Path
+-
+-from .geometry import checked_transform
+-
+-
+-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
+-
+-
+-def read_json(path):
+-    with Path(path).open(encoding="utf-8-sig") as source:
+-        value = json.load(source)
+-    if not isinstance(value, dict):
+-        raise ValueError(f"{Path(path).name} 必须是一个 JSON 对象。")
+-    return value
+-
+-
+-def write_json(path, value):
+-    """Write UTF-8 JSON via a temporary file in the destination directory."""
+-    path = Path(path)
+-    payload = json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
+-    temporary = None
+-    try:
+-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as output:
+-            temporary = Path(output.name)
+-            output.write(payload)
+-        try:
+-            os.replace(temporary, path)
+-        except PermissionError:
+-            # Some restricted locations allow new files but forbid renaming them.
+-            # Exclusive creation keeps a previously written result intact.
+-            with path.open("x", encoding="utf-8") as output:
+-                try:
+-                    output.write(payload)
+-                    output.flush()
+-                except OSError:
+-                    output.close()
+-                    path.unlink(missing_ok=True)
+-                    raise
+-    finally:
+-        if temporary is not None:
+-            temporary.unlink(missing_ok=True)
+-
+-
+-def list_images(directory):
+-    return sorted(
+-        (p for p in Path(directory).iterdir() if p.is_file() and p.suffix.casefold() in IMAGE_EXTENSIONS),
+-        key=lambda path: path.name.casefold(),
+-    )
+-
+-
+-def load_pose_pairs(path, image_directory):
+-    manifest = read_json(path)
+-    if manifest.get("frame") != "gripper_to_base" or manifest.get("length_unit") != "mm":
+-        raise ValueError("位姿文件必须声明 frame 为 gripper_to_base，length_unit 为 mm。")
+-    samples = manifest.get("samples")
+-    if not isinstance(samples, list) or not samples:
+-        raise ValueError("位姿文件的 samples 必须是包含图像名和矩阵的非空列表。")
+-    files = list_images(image_directory)
+-    images = {file.name.casefold(): file for file in files}
+-    if len(files) != len(images):
+-        raise ValueError("图像目录存在仅大小写不同的重名文件。")
+-    pairs = []
+-    seen = set()
+-    for index, sample in enumerate(samples, 1):
+-        name = sample.get("image") if isinstance(sample, dict) else None
+-        if (
+-            not isinstance(name, str)
+-            or not name
+-            or Path(name).name != name
+-            or any(character in name for character in '\\/:*?"<>|\0')
+-            or Path(name).suffix.casefold() not in IMAGE_EXTENSIONS
+-        ):
+-            raise ValueError(f"第 {index} 项的 image 必须是不含目录的图像文件名。")
+-        if name.casefold() in seen:
+-            raise ValueError(f"位姿列表有重复图像名 {name}。")
+-        key = name.casefold()
+-        seen.add(key)
+-        pairs.append((images.get(key, Path(image_directory) / name), checked_transform(sample.get("matrix"), name)))
+-    pairs.extend((file, None) for key, file in images.items() if key not in seen)
+-    return pairs
+diff --git a/robot_calibration/demo.py b/robot_calibration/demo.py
+deleted file mode 100644
+index 9accfa4..0000000
+--- a/robot_calibration/demo.py
++++ /dev/null
+@@ -1,131 +0,0 @@
+-"""Deterministic synthetic images and paired robot poses for a complete offline demo."""
+-
+-from contextlib import ExitStack
+-from pathlib import Path
+-
+-import cv2
+-import numpy as np
+-
+-from .calibration import Chessboard, Intrinsics
+-from .data import write_json
+-from .geometry import MODES, make_transform
+-
+-
+-DEMO_BOARD = Chessboard()
+-DEMO_INTRINSICS = Intrinsics(np.array([[925., 0, 482], [0, 905., 357], [0, 0, 1]]), np.zeros(5), (960, 720))
+-
+-
+-def chessboard_texture(board, tile=64):
+-    """Return a checkerboard with a white border exactly one square wide."""
+-    texture = np.full(((board.rows + 3) * tile, (board.columns + 3) * tile), 245, dtype=np.uint8)
+-    for row in range(board.rows + 1):
+-        for column in range(board.columns + 1):
+-            if (row + column) % 2 == 0:
+-                texture[(row + 1) * tile:(row + 2) * tile, (column + 1) * tile:(column + 2) * tile] = 15
+-    return texture
+-
+-
+-def demo_views(board, intrinsics, seed):
+-    """Produce 15 views with varied tilt, roll, apparent size and image position."""
+-    texture = chessboard_texture(board)
+-    height, width = texture.shape
+-    source = np.float32([[-.5, -.5], [width - .5, -.5], [width - .5, height - .5], [-.5, height - .5]])
+-    board_width, board_height = (board.columns + 1) * board.square_mm, (board.rows + 1) * board.square_mm
+-    margin = board.square_mm
+-    outer = np.float64([
+-        [-2 * margin, -2 * margin, 0], [board_width, -2 * margin, 0],
+-        [board_width, board_height, 0], [-2 * margin, board_height, 0],
+-    ])
+-    center = board.points().mean(axis=0)
+-    rng = np.random.default_rng(seed)
+-    views = []
+-    for index in range(250):
+-        euler_like = rng.uniform([-34, -36, -34], [34, 36, 34])
+-        if index % 6 == 4:
+-            euler_like[2] += 145
+-        rotation = make_transform(euler_like, [0, 0, 0])[:3, :3]
+-        translation = rng.uniform([-121, -91, 385], [121, 91, 725]) - rotation @ center
+-        rvec = cv2.Rodrigues(rotation)[0]
+-        projected, _ = cv2.projectPoints(outer, rvec, translation, intrinsics.matrix, intrinsics.distortion)
+-        projected = projected.reshape(4, 2)
+-        size = np.array(intrinsics.image_size)
+-        if (projected < 13).any() or (projected > size - 13).any():
+-            continue
+-        warp = cv2.getPerspectiveTransform(source, projected.astype(np.float32))
+-        image = cv2.warpPerspective(texture, warp, intrinsics.image_size, borderValue=166)
+-        image = cv2.GaussianBlur(image, (3, 3), 0.55)
+-        observed = np.eye(4)
+-        observed[:3, :3] = rotation
+-        observed[:3, 3] = translation
+-        views.append((image, observed))
+-        if len(views) == 15:
+-            return views
+-    raise RuntimeError("未能生成完整的演示数据集。")
+-
+-
+-def generate_demo(directory, mode):
+-    if mode not in MODES:
+-        raise ValueError("请选择有效的演示模式。")
+-    destination = Path(directory)
+-    destination.mkdir(parents=True, exist_ok=True)
+-    if any(destination.iterdir()):
+-        raise ValueError(f"演示目录必须是空目录 {destination}")
+-
+-    if mode == "eye-in-hand":
+-        mount = make_transform([8, -12, 20], [30, -20, 70])
+-        fixed_board = make_transform([6, 9, -17], [420, -220, 680])
+-    else:
+-        mount = make_transform([-5, 16, 13], [530, 100, 590])
+-        fixed_board = make_transform([3, 7, -11], [20, -35, 110])
+-
+-    with ExitStack() as rollback:
+-        images = destination / "images"
+-        images.mkdir()
+-        rollback.callback(images.rmdir)
+-        samples = []
+-        seed = 27 if mode == "eye-in-hand" else 71
+-        inverse_mount = np.linalg.inv(mount)
+-        inverse_board = np.linalg.inv(fixed_board)
+-        for index, (image, observed) in enumerate(demo_views(DEMO_BOARD, DEMO_INTRINSICS, seed), 1):
+-            path = images / f"view_{index:02d}.png"
+-            success, encoded = cv2.imencode(".png", image)
+-            if not success:
+-                raise RuntimeError(f"无法写入演示图像 {path.name}。")
+-            rollback.callback(path.unlink, missing_ok=True)
+-            encoded.tofile(path)
+-            if mode == "eye-in-hand":
+-                arm_pose = fixed_board @ np.linalg.inv(observed) @ inverse_mount
+-            else:
+-                arm_pose = mount @ observed @ inverse_board
+-            samples.append({"image": path.name, "matrix": arm_pose.tolist()})
+-
+-        for name in ("poses.json", "intrinsics.json", "candidate_poses.json", "truth.json"):
+-            rollback.callback((destination / name).unlink, missing_ok=True)
+-        write_json(destination / "poses.json", {"frame": "gripper_to_base", "length_unit": "mm", "samples": samples})
+-        write_json(destination / "intrinsics.json", DEMO_INTRINSICS.record())
+-        if mode == "eye-in-hand":
+-            write_demo_candidates(destination, fixed_board, mount)
+-        write_json(destination / "truth.json", {
+-            "mode": mode, "from_frame": "camera", "to_frame": MODES[mode], "length_unit": "mm",
+-            "matrix": mount.tolist(),
+-        })
+-        rollback.pop_all()
+-    return destination
+-
+-
+-def write_demo_candidates(destination, fixed_board, mount):
+-    new_views = [pose for _, pose in demo_views(DEMO_BOARD, DEMO_INTRINSICS, seed=28)[:6]]
+-    named_views = [(f"candidate-{index:02d}", view) for index, view in enumerate(new_views, 1)]
+-    outside = new_views[0].copy()
+-    outside[0, 3] += 1200
+-    behind = new_views[0].copy()
+-    behind[2, 3] -= 1800
+-    named_views.extend([("candidate-outside", outside), ("candidate-behind", behind)])
+-    inverse_mount = np.linalg.inv(mount)
+-    candidates = [
+-        {"id": name, "matrix": (fixed_board @ np.linalg.inv(view) @ inverse_mount).tolist()}
+-        for name, view in named_views
+-    ]
+-    write_json(destination / "candidate_poses.json", {
+-        "frame": "gripper_to_base", "length_unit": "mm", "candidates": candidates,
+-    })
+diff --git a/robot_calibration/experiment.py b/robot_calibration/experiment.py
+deleted file mode 100644
+index 0324f48..0000000
+--- a/robot_calibration/experiment.py
++++ /dev/null
+@@ -1,78 +0,0 @@
+-"""Paired simulation of rotation-axis coverage under matched measurement noise."""
+-
+-import argparse
+-from pathlib import Path
+-
+-import numpy as np
+-
+-from .data import write_json
+-from .geometry import make_transform, solve_mount, transform_error
+-
+-
+-def unit_rows(vectors):
+-    return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+-
+-
+-def compare_rotation_spread(trials, seed=42, translation_noise_mm=1.0, rotation_noise_deg=0.1):
+-    if trials < 1:
+-        raise ValueError("试验次数至少为 1。")
+-    rng = np.random.default_rng(seed)
+-    sample_count = 15
+-    true_mount = make_transform([8, -12, 20], [30, -20, 70])
+-    board_to_base = make_transform([0, 0, 0], [0, 0, 800])
+-    results = []
+-    for trial in range(trials):
+-        # Match the angle magnitudes, translations and noise realizations per trial.
+-        angles = rng.uniform(-26, 26, sample_count)
+-        translations = rng.uniform(-60, 60, (sample_count, 3))
+-        rotations_noise = rng.normal(0, rotation_noise_deg, (sample_count, 3))
+-        positions_noise = rng.normal(0, translation_noise_mm, (sample_count, 3))
+-        direction_jitter = rng.normal(0, 0.055, (sample_count, 2))
+-        directions = {
+-            "clustered": unit_rows(np.column_stack([np.ones(sample_count), direction_jitter])),
+-            "spread": unit_rows(rng.normal(size=(sample_count, 3))),
+-        }
+-        for scenario, axes in directions.items():
+-            arm_poses, observed_poses = [], []
+-            for index, axis in enumerate(axes):
+-                arm_pose = make_transform(angles[index] * axis, translations[index])
+-                observed = np.linalg.solve(arm_pose @ true_mount, board_to_base)
+-                rotation_error = make_transform(rotations_noise[index], [0, 0, 0])
+-                observed[:3, :3] = rotation_error[:3, :3] @ observed[:3, :3]
+-                observed[:3, 3] += positions_noise[index]
+-                arm_poses.append(arm_pose)
+-                observed_poses.append(observed)
+-            estimate, _ = solve_mount("eye-in-hand", arm_poses, observed_poses)
+-            results.append({"trial": trial + 1, "scenario": scenario, **transform_error(true_mount, estimate)})
+-
+-    summary = {}
+-    for scenario in ("clustered", "spread"):
+-        summary[scenario] = {}
+-        for metric in ("translation_mm", "rotation_deg"):
+-            estimates = [row[metric] for row in results if row["scenario"] == scenario]
+-            median, p90 = np.percentile(estimates, [50, 90])
+-            summary[scenario][metric] = {"median": float(median), "p90": float(p90)}
+-    return {
+-        "seed": seed, "trial_count": trials, "samples_per_trial": sample_count,
+-        "per_axis_translation_sigma_mm": translation_noise_mm, "per_axis_rotation_sigma_deg": rotation_noise_deg,
+-        "scenario_summary": summary, "trials": results,
+-    }
+-
+-
+-def main():
+-    parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("--trials", type=int, default=40)
+-    parser.add_argument("--seed", type=int, default=42)
+-    parser.add_argument("--out", type=Path, required=True)
+-    args = parser.parse_args()
+-    if args.trials < 1 or args.seed < 0:
+-        parser.error("--trials 必须至少为 1，--seed 必须是非负整数。")
+-    result = compare_rotation_spread(args.trials, args.seed)
+-    write_json(args.out, result)
+-    for scenario, summary in result["scenario_summary"].items():
+-        print(f"{scenario}: 平移误差中位数 {summary['translation_mm']['median']:.3f} mm; "
+-              f"旋转误差中位数 {summary['rotation_deg']['median']:.3f}°")
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/robot_calibration/geometry.py b/robot_calibration/geometry.py
+deleted file mode 100644
+index fa58811..0000000
+--- a/robot_calibration/geometry.py
++++ /dev/null
+@@ -1,103 +0,0 @@
+-"""Rigid transforms and the shared AX=XB solver."""
+-
+-from itertools import combinations
+-
+-import numpy as np
+-
+-
+-MODES = {"eye-in-hand": "gripper", "eye-to-hand": "base"}
+-
+-
+-def make_transform(rotation_vector_deg, translation_mm):
+-    """Construct a rigid transform from an axis-angle vector in degrees and a translation in mm."""
+-    transform = np.eye(4)
+-    transform[:3, 3] = translation_mm
+-    vector = np.asarray(rotation_vector_deg, dtype=float)
+-    magnitude = np.linalg.norm(vector)
+-    if magnitude != 0:
+-        x, y, z = vector / magnitude
+-        angle = np.deg2rad(magnitude)
+-        cross = np.array([[0, -z, y], [z, 0, -x], [-y, x, 0]])
+-        transform[:3, :3] += np.sin(angle) * cross + (1 - np.cos(angle)) * (cross @ cross)
+-    return transform
+-
+-
+-def checked_transform(value, label):
+-    try:
+-        transform = np.asarray(value, dtype=float)
+-    except (TypeError, ValueError, OverflowError) as exc:
+-        raise ValueError(f"{label}必须是 4 × 4 数值矩阵。") from exc
+-    if transform.shape != (4, 4) or not np.isfinite(transform).all():
+-        raise ValueError(f"{label}必须是有限的 4 × 4 数值矩阵。")
+-    if not np.allclose(transform[3], [0, 0, 0, 1], atol=1e-8, rtol=0):
+-        raise ValueError(f"{label}最后一行必须是 [0, 0, 0, 1]。")
+-    rotation = transform[:3, :3]
+-    if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-4, rtol=0) or not np.isclose(
+-        np.linalg.det(rotation), 1, atol=1e-4, rtol=0
+-    ):
+-        raise ValueError(f"{label}的左上角必须是有效的三维旋转矩阵。")
+-    return transform
+-
+-
+-def rotation_angle_deg(rotation):
+-    skew = rotation - rotation.T
+-    sine = np.linalg.norm([skew[2, 1], skew[0, 2], skew[1, 0]]) / 2
+-    cosine = (np.trace(rotation) - 1) / 2
+-    return float(np.rad2deg(np.arctan2(sine, cosine)))
+-
+-
+-def transform_error(reference, estimated):
+-    return {
+-        "translation_mm": float(np.linalg.norm(estimated[:3, 3] - reference[:3, 3])),
+-        "rotation_deg": rotation_angle_deg(reference[:3, :3].T @ estimated[:3, :3]),
+-    }
+-
+-
+-def solve_hand_eye(gripper_to_base, board_to_camera):
+-    """Solve AX=XB from matched absolute poses; return the rotation and translation."""
+-    if len(gripper_to_base) != len(board_to_camera) or len(gripper_to_base) < 3:
+-        raise ValueError("手眼标定至少需要 3 组一一配对的位姿。")
+-
+-    identity = np.eye(3)
+-    motion_pairs = []
+-    rotation_equations = []
+-    for i, j in combinations(range(len(gripper_to_base)), 2):
+-        a = np.linalg.solve(gripper_to_base[j], gripper_to_base[i])
+-        b = board_to_camera[j] @ np.linalg.inv(board_to_camera[i])
+-        motion_pairs.append((a, b))
+-        # Column-major vectorization of R_A R_X = R_X R_B.
+-        rotation_equations.append(np.kron(identity, a[:3, :3]) - np.kron(b[:3, :3].T, identity))
+-
+-    _, singular_values, vectors = np.linalg.svd(np.vstack(rotation_equations), full_matrices=False)
+-    if singular_values[-2] <= singular_values[0] * 1e-9:
+-        raise ValueError("旋转方向不足，无法唯一求解。请补采绕不同轴旋转的位姿。")
+-    rotation = vectors[-1].reshape((3, 3), order="F")
+-    if np.linalg.det(rotation) < 0:
+-        rotation = -rotation
+-    u, _, vt = np.linalg.svd(rotation)
+-    rotation = u @ vt
+-
+-    # With R_X known, solve (R_A - I) t_X = R_X t_B - t_A.
+-    lhs = np.vstack([a[:3, :3] - identity for a, _ in motion_pairs])
+-    rhs = np.concatenate([rotation @ b[:3, 3] - a[:3, 3] for a, b in motion_pairs])
+-    translation, _, rank, _ = np.linalg.lstsq(lhs, rhs, rcond=1e-9)
+-    if rank < 3:
+-        raise ValueError("位姿变化不足，无法唯一求解平移。请补采绕不同轴旋转的位姿。")
+-    return rotation, translation
+-
+-
+-def solve_mount(mode, gripper_to_base, board_to_camera):
+-    """Return camera-to-gripper or camera-to-base, plus the fixed-board pose estimates."""
+-    if mode not in MODES:
+-        raise ValueError(f"未知的手眼标定模式 {mode!r}。")
+-    reference_poses = gripper_to_base if mode == "eye-in-hand" else [
+-        np.linalg.inv(pose) for pose in gripper_to_base
+-    ]
+-    rotation, translation = solve_hand_eye(reference_poses, board_to_camera)
+-    mount = np.eye(4)
+-    mount[:3, :3] = rotation
+-    mount[:3, 3] = translation
+-    fixed_board_poses = [
+-        reference @ mount @ observed for reference, observed in zip(reference_poses, board_to_camera, strict=True)
+-    ]
+-    return mount, fixed_board_poses
+diff --git a/robot_calibration/sampling.py b/robot_calibration/sampling.py
+deleted file mode 100644
+index 50df7cc..0000000
+--- a/robot_calibration/sampling.py
++++ /dev/null
+@@ -1,107 +0,0 @@
+-"""Rank offline eye-in-hand candidate poses by visibility and rotational observability."""
+-
+-from itertools import combinations
+-
+-import cv2
+-import numpy as np
+-
+-from .calibration import Chessboard, Intrinsics
+-from .geometry import checked_transform
+-
+-
+-def load_candidates(record):
+-    if record.get("frame") != "gripper_to_base" or record.get("length_unit") != "mm":
+-        raise ValueError("候选文件必须声明 frame 为 gripper_to_base，length_unit 为 mm。")
+-    candidates = record.get("candidates")
+-    if not isinstance(candidates, list) or not candidates:
+-        raise ValueError("候选文件必须提供非空的 candidates 列表。")
+-    ids, result = set(), []
+-    for item in candidates:
+-        identifier = item.get("id") if isinstance(item, dict) else None
+-        if not isinstance(identifier, str) or not identifier.strip() or identifier in ids:
+-            raise ValueError("每个候选位姿必须有不同的非空字符串 id。")
+-        ids.add(identifier)
+-        result.append((identifier, checked_transform(item.get("matrix"), identifier)))
+-    return result
+-
+-
+-def board_outline(board):
+-    """Use the four sides of the full checkerboard, including its one-square white border."""
+-    xs = np.linspace(-2 * board.square_mm, (board.columns + 1) * board.square_mm, 9)
+-    ys = np.linspace(-2 * board.square_mm, (board.rows + 1) * board.square_mm, 9)
+-    edges = np.concatenate([
+-        np.column_stack([xs, np.full_like(xs, y)]) for y in (ys[0], ys[-1])
+-    ] + [
+-        np.column_stack([np.full_like(ys, x), ys]) for x in (xs[0], xs[-1])
+-    ])
+-    return np.column_stack([edges, np.zeros(len(edges))])
+-
+-
+-def image_margin(board_to_camera, outline, intrinsics):
+-    rotation = board_to_camera[:3, :3]
+-    translation = board_to_camera[:3, 3]
+-    camera_points = outline @ rotation.T + translation
+-    if (camera_points[:, 2] <= 0).any():
+-        return None, "棋盘格部分位于相机后方"
+-    if np.dot(rotation[:, 2], camera_points.mean(axis=0)) <= 0:
+-        return None, "相机看向棋盘格背面"
+-    projected, _ = cv2.projectPoints(
+-        outline, cv2.Rodrigues(rotation)[0], translation, intrinsics.matrix, intrinsics.distortion
+-    )
+-    pixels = projected.reshape(-1, 2)
+-    if not np.isfinite(pixels).all():
+-        return None, "投影坐标不是有限数值"
+-    return float(min(pixels.min(), (np.array(intrinsics.image_size) - 1 - pixels).min())), ""
+-
+-
+-def motion_information(first, second):
+-    equation = first.T @ second - np.eye(3)
+-    return equation.T @ equation
+-
+-
+-def recommend_poses(calibration, pairs, candidates, min_margin_px=18.0):
+-    if calibration.get("mode") != "eye-in-hand" or calibration.get("to_frame") != "gripper":
+-        raise ValueError("位姿推荐需要眼在手上的手眼结果。")
+-    if calibration.get("from_frame") != "camera" or calibration.get("length_unit") != "mm":
+-        raise ValueError("手眼结果必须表示毫米为单位的相机到末端变换。")
+-    if not np.isfinite(min_margin_px) or min_margin_px < 0:
+-        raise ValueError("图像边距应是非负的有限像素值。")
+-
+-    try:
+-        board = Chessboard(**calibration["chessboard"])
+-        intrinsics = Intrinsics.from_record(calibration["intrinsics"])
+-        fixed = calibration["fixed_board_estimate"]
+-        if fixed.get("to_frame") != "base":
+-            raise ValueError("眼在手上需要标定板到基座的估计变换。")
+-        fixed_board = checked_transform(fixed["matrix"], "棋盘格到基座")
+-        mount = checked_transform(calibration["matrix"], "相机到末端")
+-        used = {view["image"].casefold() for view in calibration["views"] if view["accepted"]}
+-    except (KeyError, TypeError, AttributeError) as exc:
+-        raise ValueError("手眼结果缺少位姿推荐需要的标定数据。") from exc
+-
+-    rotations = [pose[:3, :3] for path, pose in pairs if pose is not None and path.name.casefold() in used]
+-    if len(rotations) != len(used) or len(rotations) < 3:
+-        raise ValueError("请提供当次标定使用的全套机器人位姿。")
+-    information = sum((motion_information(a, b) for a, b in combinations(rotations, 2)), np.zeros((3, 3)))
+-    baseline = np.linalg.eigvalsh(information)[0]
+-    outline = board_outline(board)
+-    camera_inverse = np.linalg.inv(mount)
+-    accepted, rejected = [], []
+-    for identifier, candidate in candidates:
+-        camera_pose = camera_inverse @ np.linalg.solve(candidate, fixed_board)
+-        margin, reason = image_margin(camera_pose, outline, intrinsics)
+-        row = {"id": identifier, "projected_margin_px": margin}
+-        if margin is None or margin < min_margin_px:
+-            row["reason"] = reason or "棋盘格出画或图像边距不足"
+-            rejected.append(row)
+-            continue
+-        updated = information + sum(motion_information(rotation, candidate[:3, :3]) for rotation in rotations)
+-        row["rotation_information_gain"] = float(max(0, np.linalg.eigvalsh(updated)[0] - baseline))
+-        accepted.append(row)
+-
+-    accepted.sort(key=lambda row: (-row["rotation_information_gain"], -row["projected_margin_px"], row["id"]))
+-    return {
+-        "schema_version": 1, "mode": "eye-in-hand", "min_margin_px": min_margin_px,
+-        "source_accepted_views": len(rotations), "robot_path_checked": False,
+-        "ranked": accepted, "rejected": rejected,
+-    }
+diff --git a/tests/test_calibration.py b/tests/test_calibration.py
+deleted file mode 100644
+index 696d676..0000000
+--- a/tests/test_calibration.py
++++ /dev/null
+@@ -1,151 +0,0 @@
+-import shutil
+-import subprocess
+-import sys
+-import unittest
+-from pathlib import Path
+-from tempfile import TemporaryDirectory
+-from unittest.mock import patch
+-
+-import cv2
+-import numpy as np
+-
+-from robot_calibration.calibration import (
+-    Chessboard, Intrinsics, calibrate_intrinsics, compare_truth, estimate_mount, find_corners,
+-)
+-from robot_calibration.data import list_images, load_pose_pairs, read_json, write_json
+-from robot_calibration.demo import DEMO_BOARD, DEMO_INTRINSICS, demo_views, generate_demo
+-from robot_calibration.experiment import compare_rotation_spread
+-from robot_calibration.geometry import make_transform, solve_mount
+-from robot_calibration.sampling import load_candidates, recommend_poses
+-
+-
+-class CalibrationTests(unittest.TestCase):
+-    @classmethod
+-    def setUpClass(cls):
+-        root = cls.enterClassContext(TemporaryDirectory(prefix="calibration-tests-"))
+-        cls.root = Path(root)
+-        cls.demo = {
+-            mode: generate_demo(cls.root / "中文样例" / mode, mode)
+-            for mode in ("eye-in-hand", "eye-to-hand")
+-        }
+-
+-    def test_both_modes_from_images_recover_known_transforms(self):
+-        for mode, target in (("eye-in-hand", "gripper"), ("eye-to-hand", "base")):
+-            with self.subTest(mode=mode):
+-                root = self.demo[mode]
+-                original_intrinsics = Intrinsics.from_record(read_json(root / "intrinsics.json"))
+-                pairs = load_pose_pairs(root / "poses.json", root / "images")
+-                result = estimate_mount(mode, pairs, DEMO_BOARD, original_intrinsics)
+-                self.assertEqual(result["from_frame"], "camera")
+-                self.assertEqual(result["to_frame"], target)
+-                self.assertEqual(sum(item["accepted"] for item in result["views"]), 15)
+-                error = compare_truth(result, read_json(root / "truth.json"))
+-                self.assertLess(error["translation_mm"], 1.0)
+-                self.assertLess(error["rotation_deg"], 0.1)
+-
+-    def test_intrinsics_export_can_be_reimported(self):
+-        root = self.demo["eye-in-hand"]
+-        result = calibrate_intrinsics(list_images(root / "images"), DEMO_BOARD)
+-        output = self.root / "内参结果.json"
+-        write_json(output, result)
+-        reread = Intrinsics.from_record(read_json(output))
+-        self.assertEqual(reread.image_size, DEMO_INTRINSICS.image_size)
+-        self.assertLess(result["reprojection_rms_px"], 0.2)
+-        self.assertLess(max(row["reprojection_rms_px"] for row in result["views"]), 0.25)
+-        np.testing.assert_allclose(reread.matrix, DEMO_INTRINSICS.matrix, atol=10)
+-
+-    def test_180_degree_view_uses_the_same_physical_target_corner(self):
+-        image, _ = demo_views(DEMO_BOARD, DEMO_INTRINSICS, 27)[0]
+-        original = find_corners(image, DEMO_BOARD, orient=True)
+-        rotated = find_corners(cv2.rotate(image, cv2.ROTATE_180), DEMO_BOARD, orient=True)
+-        target = np.array([image.shape[1] - 1, image.shape[0] - 1]) - original
+-        np.testing.assert_allclose(rotated, target, atol=0.3)
+-
+-    def test_missing_and_unpaired_images_are_reported(self):
+-        source = self.demo["eye-in-hand"]
+-        folder = self.root / "配对检查"
+-        folder.mkdir()
+-        images = folder / "images"
+-        shutil.copytree(source / "images", images)
+-        (images / "view_01.png").unlink()
+-        shutil.copyfile(images / "view_02.png", images / "额外图片.png")
+-        pairs = load_pose_pairs(source / "poses.json", images)
+-        result = estimate_mount("eye-in-hand", pairs, DEMO_BOARD, DEMO_INTRINSICS)
+-        rejected = {entry["image"]: entry["reason"] for entry in result["views"] if not entry["accepted"]}
+-        self.assertEqual(set(rejected), {"view_01.png", "额外图片.png"})
+-        self.assertIn("缺少配对", rejected["额外图片.png"])
+-
+-    def test_rejects_duplicate_pose_filenames(self):
+-        root = self.demo["eye-in-hand"]
+-        manifest = read_json(root / "poses.json")
+-        manifest["samples"].append(dict(manifest["samples"][0], image="VIEW_01.PNG"))
+-        path = self.root / "duplicates.json"
+-        write_json(path, manifest)
+-        with self.assertRaisesRegex(ValueError, "重复"):
+-            load_pose_pairs(path, root / "images")
+-
+-    def test_rejects_pose_with_wrong_unit(self):
+-        root = self.demo["eye-in-hand"]
+-        manifest = read_json(root / "poses.json")
+-        manifest["length_unit"] = "m"
+-        path = self.root / "base-in-metres.json"
+-        write_json(path, manifest)
+-        with self.assertRaisesRegex(ValueError, "length_unit"):
+-            load_pose_pairs(path, root / "images")
+-
+-    def test_same_axis_motion_is_rejected(self):
+-        mount = make_transform([8, -12, 20], [30, -20, 70])
+-        board_in_base = make_transform([0, 0, 0], [0, 0, 800])
+-        arm_poses = [make_transform([angle, 0, 0], [0, 0, 0]) for angle in (5, 15, 25, 35, 50)]
+-        board_poses = [np.linalg.solve(arm @ mount, board_in_base) for arm in arm_poses]
+-        with self.assertRaisesRegex(ValueError, "旋转方向不足"):
+-            solve_mount("eye-in-hand", arm_poses, board_poses)
+-
+-    def test_hand_eye_rejects_ambiguous_board_and_threshold(self):
+-        with self.assertRaisesRegex(ValueError, "一奇一偶"):
+-            estimate_mount("eye-in-hand", [], Chessboard(8, 6, 24), DEMO_INTRINSICS)
+-        with self.assertRaisesRegex(ValueError, "误差上限"):
+-            estimate_mount("eye-in-hand", [], DEMO_BOARD, DEMO_INTRINSICS, float("nan"))
+-
+-    def test_pose_recommendation_filters_out_of_view_and_ranks_visible_poses(self):
+-        root = self.demo["eye-in-hand"]
+-        pairs = load_pose_pairs(root / "poses.json", root / "images")
+-        output = estimate_mount("eye-in-hand", pairs, DEMO_BOARD, DEMO_INTRINSICS)
+-        candidates = load_candidates(read_json(root / "candidate_poses.json"))
+-        ranking = recommend_poses(output, pairs, candidates, min_margin_px=10.0)
+-        self.assertGreaterEqual(len(ranking["ranked"]), 5)
+-        self.assertFalse(ranking["robot_path_checked"])
+-        rejected = {row["id"]: row for row in ranking["rejected"]}
+-        self.assertLess(rejected["candidate-outside"]["projected_margin_px"], 0)
+-        self.assertIsNone(rejected["candidate-behind"]["projected_margin_px"])
+-        scores = [row["rotation_information_gain"] for row in ranking["ranked"]]
+-        self.assertGreater(scores[0], scores[-1])
+-        self.assertEqual(scores, sorted(scores, reverse=True))
+-
+-    def test_legacy_demo_reproduces_documented_noise_result(self):
+-        root = Path(__file__).resolve().parents[1]
+-        run = subprocess.run(
+-            [sys.executable, "-X", "utf8", str(root / "first_handeye_experiment.py"), "--noise-mm", "1"],
+-            capture_output=True, encoding="utf-8", check=True,
+-        )
+-        self.assertIn("1.909793 mm", run.stdout)
+-
+-    def test_noiseless_rotation_experiment_recovers_truth_in_both_scenarios(self):
+-        output = compare_rotation_spread(2, translation_noise_mm=0, rotation_noise_deg=0)
+-        self.assertEqual(len(output["trials"]), 4)
+-        for row in output["trials"]:
+-            self.assertLess(row["translation_mm"], 1e-7)
+-            self.assertLess(row["rotation_deg"], 1e-7)
+-
+-    def test_failed_demo_generation_allows_retry(self):
+-        destination = self.root / "retry-demo"
+-        with patch("robot_calibration.demo.write_json", side_effect=PermissionError("test failure")):
+-            with self.assertRaises(PermissionError):
+-                generate_demo(destination, "eye-to-hand")
+-        self.assertEqual(list(destination.iterdir()), [])
+-        generate_demo(destination, "eye-to-hand")
+-        self.assertTrue((destination / "truth.json").is_file())
+-
+-
+-if __name__ == "__main__":
+-    unittest.main()
+diff --git a/tests/test_workbench.py b/tests/test_workbench.py
+deleted file mode 100644
+index d2dc0e7..0000000
+--- a/tests/test_workbench.py
++++ /dev/null
+@@ -1,71 +0,0 @@
+-from concurrent.futures import ThreadPoolExecutor
+-from pathlib import Path
+-from tempfile import TemporaryDirectory
+-from time import monotonic, sleep
+-import unittest
+-from unittest.mock import patch
+-
+-from robot_calibration.data import read_json
+-
+-try:
+-    import tkinter as tk
+-    from robot_calibration.app import Workbench
+-except ImportError:
+-    tk = None
+-
+-
+-@unittest.skipIf(tk is None, "Tkinter is unavailable")
+-class WorkbenchTest(unittest.TestCase):
+-    def test_gui_demo_run_switch_and_export(self):
+-        try:
+-            window = tk.Tk()
+-        except tk.TclError as exc:
+-            self.skipTest(str(exc))
+-        self.addCleanup(window.destroy)
+-        window.withdraw()
+-        root = Path(self.enterContext(TemporaryDirectory(prefix="calibration-gui-test-")))
+-        executor = self.enterContext(ThreadPoolExecutor(max_workers=1))
+-        app = Workbench(window, root / "demos", executor)
+-
+-        def finish():
+-            end = monotonic() + 15
+-            while app.busy and monotonic() < end:
+-                window.update()
+-                sleep(0.02)
+-            self.assertFalse(app.busy, "GUI job timed out")
+-
+-        with patch("robot_calibration.app.messagebox.showerror", side_effect=AssertionError("unexpected GUI error")):
+-            for mode in ("intrinsics", "eye-in-hand", "eye-to-hand"):
+-                with self.subTest(mode=mode):
+-                    app.select_mode(mode)
+-                    self.assertIsNone(app.result)
+-                    app.load_demo()
+-                    finish()
+-                    self.assertEqual(len(app.table.get_children()), 15)
+-                    app.run()
+-                    finish()
+-                    self.assertEqual(len(app.result["views"]), 15)
+-                    self.assertEqual(app.export.cget("state"), "normal")
+-                    output = root / f"{mode}-export.json"
+-                    with patch("robot_calibration.app.filedialog.asksaveasfilename", return_value=str(output)):
+-                        app.export_result()
+-                    record = read_json(output)
+-                    if mode == "intrinsics":
+-                        self.assertIn("camera_matrix", record)
+-                    else:
+-                        self.assertEqual(record["mode"], mode)
+-                    app.board_vars[2].set("25")
+-                    self.assertIsNone(app.result)
+-                    self.assertEqual(app.export.cget("state"), "disabled")
+-
+-        app.load_demo()
+-        finish()
+-        app.threshold.set("0.000001")
+-        with patch("robot_calibration.app.messagebox.showerror") as show_error:
+-            app.run()
+-            finish()
+-            show_error.assert_called_once()
+-        self.assertIsNone(app.result)
+-        self.assertEqual(app.export.cget("state"), "disabled")
+-        self.assertTrue(all(row["accepted"] is False for row in app.failed_views))
+-        self.assertEqual(len(app.table.get_children()), 15)
+diff --git "a/\344\273\273\345\212\241\345\233\236\351\241\276.md" "b/\344\273\273\345\212\241\345\233\236\351\241\276.md"
+deleted file mode 100644
+index c74e2ac..0000000
+--- "a/\344\273\273\345\212\241\345\233\236\351\241\276.md"
++++ /dev/null
+@@ -1,57 +0,0 @@
+-# 机器人自动标定任务回顾
+-
+-2026 年 11 月 17 日
+-
+-本轮搭建了可运行的离线桌面工作台，并完成旋转采样对照和下一拍推荐原型。可以用演示数据体验完整流程，也可以导入符合约定的实拍照片、相机内参和机器人位姿。
+-
+-## 怎么体验
+-
+-在项目目录打开 PowerShell，运行以下命令。
+-
+-```powershell
+-python -m pip install -r requirements.txt
+-python -m robot_calibration
+-```
+-
+-进入 **相机内参**、**眼在手上** 或 **眼在手外**，依次点击「载入演示数据」「运行标定」「导出 JSON」。右侧展示图像预览、变换方向、误差和逐张检查结果。筛选失败时可从样本表定位具体照片。
+-
+-## 实现与验证
+-
+-- **三种标定模式。** 内参模式由实际像素角点估计针孔内参和畸变。手眼模式先用 PnP 从图像估计棋盘格位姿，再求解相机到末端或相机到基座的变换。两种手眼模式共用求解器，并按各自安装方式处理坐标方向。 [OpenCV 手眼标定坐标约定](https://docs.opencv.org/4.13.0/d9/d0c/group__calib3d.html)
+-- **数据与质量检查。** 位姿按图像名配对，校验坐标方向、长度单位、矩阵和分辨率。软件保存未配对、角点失败和重投影超限等原因。测试覆盖了棋盘格旋转 180° 后的角点顺序。
+-- **位姿推荐。** 在眼在手上模式，用已有手眼结果预测棋盘格完整入镜情况，再把能增强旋转约束的候选排在前面。演示的 8 个候选中通过 6 个，排除出画和落在相机后方的各 1 个。排序结果保留预计边距和评分，供离线复查。
+-- **回归测试。** 运行了 13 项测试，覆盖三种桌面模式的演示与导出、异常时保留检查记录、模拟真值对照、退化位姿、文件配对、重试和推荐排序。
+-
+-| 验证项 | 有效样本 | 测得结果 |
+-|---|---:|---|
+-| 仿真相机内参 | 15 / 15 | 重投影 RMS 0.073 px |
+-| OpenCV 官方实拍棋盘格内参 | 13 / 13 | 重投影 RMS 0.259 px |
+-| 仿真眼在手上，输入已知内参 | 15 / 15 | 相机到末端误差 0.221 mm、0.010° |
+-| 仿真眼在手外，输入已知内参 | 15 / 15 | 相机到基座误差 0.157 mm、0.030° |
+-| 仿真眼在手上，输入由样例照片重新估计的内参 | 15 / 15 | 相机到末端误差 0.952 mm、0.216° |
+-
+-公开实拍样本来自 OpenCV 4.13.0 的 `samples/data`。用其中 13 张 640 × 480 的 `left*.jpg` 验证内参流程，棋盘格为 9 × 6 个内角点。该组的 0.259 px 是图像拟合误差。两种手眼误差来自生成样例中已知的变换。 [OpenCV 官方样例目录](https://github.com/opencv/opencv/tree/4.13.0/samples/data)
+-
+-## 旋转方向对照仿真
+-
+-每轮使用 15 个位姿，做 40 轮配对试验。两组共用转角幅度、末端平移和随机噪声，只改变旋转轴分布。视觉位姿的每轴平移噪声标准差设为 1 mm，旋转向量噪声标准差设为 0.1°。
+-
+-| 旋转轴分布 | 平移误差中位数 | 平移误差第 90 百分位 | 旋转误差中位数 | 旋转误差第 90 百分位 |
+-|---|---:|---:|---:|---:|
+-| 集中在接近同一方向 | 17.50 mm | 38.76 mm | 0.888° | 2.108° |
+-| 分散在多个方向 | 2.80 mm | 4.57 mm | 0.215° | 0.376° |
+-
+-这组数据说明在本仿真的噪声和位姿范围内，增加旋转轴覆盖能改善求解。下一轮实机对照要用相同拍摄预算比较人工选点、固定轨迹和推荐补采，并检查预测视野与实际画面的一致程度。
+-
+-```powershell
+-python -m robot_calibration.experiment --trials 40 --seed 42 --out .\rotation-coverage.json
+-python -m unittest discover -s tests -v
+-```
+-
+-## 实机阶段从哪里接着做
+-
+-1. 先借用一台可导出实际末端位姿的机械臂。固定相机焦距和分辨率，测量棋盘格方格边长，确认控制器的基座、末端、角度顺序和长度单位。
+-2. 用眼在手上方式人工拍一批照片。每次等机械臂停稳，按文件名记录实际末端位姿，采集绕不同方向旋转的画面，另留若干位置用于独立验证。
+-3. 先做一次离线标定和留出验证。确认数据配对、坐标方向与误差后，再开展位姿推荐对照，并接入控制器的可达性与路径检查。自动触发、机械臂运动和按实拍质量补采属于实机阶段。
+-
+-[README](./README.md) 有输入 JSON 示例及命令行复现步骤。
+diff --git "a/\351\230\266\346\256\2650_\346\211\213\347\234\274\346\240\207\345\256\232\345\274\200\346\272\220\351\241\271\347\233\256\350\260\203\347\240\224.md" "b/\351\230\266\346\256\2650_\346\211\213\347\234\274\346\240\207\345\256\232\345\274\200\346\272\220\351\241\271\347\233\256\350\260\203\347\240\224.md"
+deleted file mode 100644
+index e927b38..0000000
+--- "a/\351\230\266\346\256\2650_\346\211\213\347\234\274\346\240\207\345\256\232\345\274\200\346\272\220\351\241\271\347\233\256\350\260\203\347\240\224.md"
++++ /dev/null
+@@ -1,92 +0,0 @@
+-# 阶段0 调研笔记：手眼标定开源项目学习
+-
+-> 目的：写代码前，先把 GitHub 上"自动手眼标定"这一路的成熟做法吃透。
+-> 本文档是学习笔记，不是代码。对应 README 里的 6 步流水线：找板→规划位姿→运动→采集→求解 AX=XB→验证。
+-
+-## 一、调研的 4 个关键项目
+-
+-| 项目 | 平台 | 一句话定位 | 对我们的价值 |
+-|------|------|-----------|-------------|
+-| [easy_handeye](https://github.com/IFL-CAMP/easy_handeye) (IFL-CAMP) | ROS1 | 自动手眼标定的"鼻祖"，带 GUI、可自动移动机器人采样 | 看"自动化流程"长什么样 |
+-| [easy_handeye2](https://github.com/marcoesposito1988/easy_handeye2) (marcoesposito1988) | ROS2 | easy_handeye 的 ROS2 移植版，维护更活跃 | 同上，且有仿真 demo |
+-| [realsense-hand-eye-calibration](https://github.com/flyingGH/realsense-hand-eye-calibration) (flyingGH) | Python | 眼在手上、4 算法自动选优、异常排除、诊断 | 工程化细节最全、最可抄 |
+-| [Xbotics-Embodied-AI-Handbook](https://github.com/Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Handbook) | Python | 教学向，Park 算法从零实现（不用 OpenCV） | **学数学最好的范本** |
+-
+-底层求解器都是同一个：[OpenCV `cv2.calibrateHandEye`](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html)（内置 Tsai-Lenz / Park / Horaud / Andreff / Daniilidis 五种）。另有 C++ 实现 [camodocal hand-eye](https://github.com/jhu-lcsr/handeye_calib_camodocal)。
+-
+----
+-
+-## 二、核心收获
+-
+-### 1. AX=XB 是统一形式——眼在手上 / 眼在手外只差"谁动"
+-
+-两个拓扑最终都归结为同一个方程 `A X = X B`，只是 A、B 的构造方式不同。
+-
+-- **眼在手上**（相机装末端、板固定）：`X = ^E T_C`（相机在末端系下）
+-  - `A = robot_j⁻¹ · robot_i`（机器人末端在两次位姿间的相对运动）
+-  - `B = camera_j · camera_i⁻¹`（板在相机系下的相对运动）
+-- **眼在手外**（相机固定、板装末端）：`X = ^B T_C`（相机在基座系下）
+-  - 先把每个机器人位姿取逆（`robot_forward = [inv(T) for T in robot_mats]`），
+-  - 然后**套用完全相同的 A/B 构造**——这就是"只换谁动"的实现层含义。
+-
+-> 参考实现：[`common_transforms.py` 的 `build_relative_motion_pairs`](https://github.com/Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Handbook) 和 [`solve_hand_eye_teaching.py`](https://github.com/Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Handbook)。
+-
+-### 2. 验证公式——一个常见的坑
+-
+-- ✅ **正确**：`gripper2base @ cam2gripper @ target2cam = 常量`（板在基座系下的位姿在所有采样下应当恒定，偏差越大说明标定越差）。
+-- ❌ **错误**：`||AX − XB||`（这只是衡量"方程被满足多少"，不是衡量标定精度）。
+-
+-> realsense 项目明确把这一点列为创新点之一；Xbotics 的 `solve_hand_eye_park` 也用 `pose_error(A@X, X@B)` 做"方程残差"，另用 `summarize_transform_constancy` 做"板位姿一致性"验证。
+-
+-### 3. 数据质量规则（Tsai 原论文 §1.3.2，easy_handeye 直接引用）
+-
+-这是**师兄精度 2.15mm 失败的直接反推**：
+-
+-1. 最大化位姿之间的**旋转**（绕各轴尽量到 ~90°，两个方向都要）；
+-2. 最小化相机到目标的**距离**（凑近拍）；
+-3. 最小化位姿之间的**平移**（原地转手腕，别满场跑）；
+-4. 用**冗余**采样（10~15 组）；
+-5. **相机内参要先标定**；
+-6. **机器人运动模型要先标定** ← 这一条是"鸡生蛋"的根：机器人名义精度 0.5~1mm 会直接锁死手眼精度。
+-
+-realsense 项目把它工程化成了**自动诊断**：实时统计 rx/ry/rz 变化范围，若 `ry` 变化 < 20~30° 就报警"手腕俯仰角变化不够"。
+-
+-### 4. 一个可抄的工程架构（realsense）
+-
+-```
+-采集端 collect_camera.py    记录端 record_arm.py       求解端 handeye_solver.py
+- ├ 棋盘格检测                 ├ 订阅机械臂位姿            ├ 读两份 JSON
+- ├ solvePnP → 相机位姿        └ 触发时保存 arm.json      ├ 4 种算法求解
+- └ 存 camera.json                                        ├ 自动选验证误差最小者
+-                                                         ├ 异常样本 --exclude
+-                                                         └ 验证 + 输出 4x4 矩阵
+-```
+-三端解耦，采集/记录/求解各是独立脚本，中间用 JSON + 可选 ZMQ 触发同步。这正是我们 6 步流水线要落地的样子。
+-
+-### 5. "自动规划位姿"的现成模式（easy_handeye + MoveIt!）
+-
+-easy_handeye 的可选功能 `rqt_easy_handeye` + `MoveIt!`：**用户给一个"起始位姿"（保证板在视野内），GUI 自动规划一组绕起始点、姿态多样化的采样位姿，自动移动、自动采样**。
+-
+-——这就是我们要的"自动规划位姿"的参考实现。它印证了 README 里的判断：**自动化的前提是"起始位姿已知（板已在视野内）"**，自动化负责的是"从起始位姿出发，自动发散出一组高质量采样位姿"，而不是"在整间屋子里盲找板"。
+-
+----
+-
+-## 三、对我们阶段0仿真的启发
+-
+-1. **不需要 cv2**：Xbotics 的 `solve_hand_eye_park` 用纯 numpy 从零实现了 Park 算法（旋转用 SVD、平移用最小二乘），正好绕开本环境 cv2 未安装的限制，还能顺带把数学学透。
+-2. **验证用"板位姿一致性"**，不用 `||AX−XB||`。
+-3. **仿真里要能注入"数据质量"变量**（旋转多样性、平移量、噪声、坏样本），因为决定成败的是数据质量而非算法本身。
+-4. **自动规划位姿 = 绕起始点发散**，不是全局搜索——这直接指导仿真里"生成位姿"怎么写。
+-
+-## 四、建议学习顺序
+-
+-1. 先读 **Xbotics** `common_transforms.py`（SE(3) 工具函数 + Park 从零实现）→ 吃透数学；
+-2. 再读 **realsense** `handeye_solver.py`（工程化：多方法、验证、诊断、排除异常）；
+-3. 再看 **easy_handeye** 文档（自动化流程：采样、GUI、tf 发布、自动移动）；
+-4. 然后才动手写我们自己的阶段0仿真脚本（生成位姿→采图→求解→验证）。
+-
+-## 五、未决问题（留到写代码前想清）
+-
+-- 阶段0 仿真先用**眼在手上**还是**眼在手外**？（README 建议先用眼在手上跑通，因为桌面零成本）
+-- 仿真里要不要连"图像→solvePnP"一起模拟，还是直接给理想相机位姿 + 加噪声？
+-- 自动规划位姿的"起始位姿发散"用确定性网格还是随机采样？
+diff --git "a/\351\241\271\347\233\256\346\200\273\350\267\257\347\272\277.md" "b/\351\241\271\347\233\256\346\200\273\350\267\257\347\272\277.md"
+deleted file mode 100644
+index f524e56..0000000
+--- "a/\351\241\271\347\233\256\346\200\273\350\267\257\347\272\277.md"
++++ /dev/null
+@@ -1,179 +0,0 @@
+-# 工业机器人自动标定 — 项目总路线
+-
+-> 目标：用传感器自动采集 + 数值优化的方式，替代人工示教标定，提高精度、效率与可重复性。
+-> 本文档用于帮助你从 0 到 1 逐步理解方向，并作为后续项目推进的路线图。
+-
+----
+-
+-## 一、先搞清楚：你要解决的是哪一类"标定"
+-
+-"机器人标定"是一组不同问题的统称，动手前必须先定位。按作用对象分：
+-
+-| 标定类型 | 解决的问题 | 备注 |
+-|---|---|---|
+-| **运动学标定**（本项目的核心） | 机器人各关节零位、连杆长度/偏置/扭角等真实几何参数与名义值的偏差 | 直接决定绝对定位精度 |
+-| 关节零位标定 | 各轴"零点"（home offset）偏差 | 运动学标定的子集，最常见 |
+-| 手眼标定（Hand-Eye） | 相机 ↔ 末端法兰 的相对位姿 | 视觉方案的前置步骤 |
+-| 工具标定（TCP/TCPF） | 末端工具中心点（Tool Center Point）的坐标与姿态 | 换工具后必须重做 |
+-| 基座标定 | 机器人基座 ↔ 世界/产线坐标系 | 多机协同/工件定位需要 |
+-| 相机标定 | 相机内参、畸变系数 | 视觉测量的前置步骤 |
+-
+-**你口中的"人工标定麻烦、精度不够"，最可能指的是运动学标定（含零位标定）。** 它是机器人"不知道自己身体真实尺寸"导致的系统性误差，最值得自动化。
+-
+----
+-
+-## 二、问题定义：为什么人工标定又麻烦又不准
+-
+-传统人工标定（示教 + 肉眼对准/打孔尖）的根本缺陷：
+-
+-1. **重复性差**：人眼对准误差通常 0.1~1 mm 量级，不同操作工结果不一致。
+-2. **效率低**：一次完整标定可能数小时，且全程占用机器人（停产）。
+-3. **采样稀疏**：只在少数几个点对准，全局工作空间的误差缺乏约束，标定后"局部准、远处飘"。
+-4. **缺角度信息**：靠"点对点"只能约束位置，末端姿态误差几乎没被测量。
+-5. **无定量评估**：标定后没有客观精度报告，好坏全凭感觉。
+-
+-**自动标定的本质**：用传感器自动、密集、高精度地采集末端位姿（位置+姿态），把"真实参数"当成未知数，用数值优化反解出来，再补偿回系统。
+-
+----
+-
+-## 三、可选技术路线对比
+-
+-| 方案 | 测量原理 | 典型精度 | 成本 | 适用场景 | 推荐度 |
+-|---|---|---|---|---|---|
+-| 激光跟踪仪 | 追踪末端球靶的 3D 坐标 | ±10~50 μm | 极高（百万级） | 航空/高端制造 | 精度天花板 |
+-| **视觉 + 标定板**（eye-to-hand） | 相机测量靶标位姿 | ±0.05~0.3 mm | 低（可自建） | 工业主流、**入门推荐** | ⭐⭐⭐ |
+-| 视觉 + 编码标记 / 多相机 | 多视角融合测位姿 | 中 | 中 | 大工作空间 | ⭐⭐ |
+-| 物理约束闭环 | 末端触平面/球/孔，构造约束方程 | ±0.1 mm 级 | 低（无需相机） | 无视觉条件 | ⭐⭐ |
+-| 仅关节编码器 | 采集关节角 + 约束 | 中~低 | 极低 | 精度要求不高 | ⭐ |
+-| IMU / 倾角仪 | 重力方向约束 | 中 | 低 | 辅助 | ⭐ |
+-
+-**建议**：先走「视觉 + 标定板」路线。理由：成本低、资料多、可自建原型、精度对大多数工业场景（0.1 mm 级）足够；后续要冲 μm 级再升级到激光跟踪仪。
+-
+----
+-
+-## 四、理论基础清单（需要掌握的知识）
+-
+-### 4.1 数学基础
+-- 线性代数、矩阵微积分、数值优化基础
+-- **李群李代数 SE(3)**（刚体变换用李代数表示，误差建模的核心工具）
+-
+-### 4.2 机器人学
+-- 正运动学（FK）、逆运动学（IK）
+-- 运动学参数化：**DH / MDH / POE**（POE 基于指数积，无奇异性，更适合标定）
+-- 雅可比矩阵、微分运动学
+-
+-### 4.3 误差建模与辨识（核心）
+-- 几何误差源 → 末端位姿误差的**线性化**
+-- **误差雅可比矩阵**：`末端误差 = J × 参数误差`
+-- 采集 N 个位姿 → 堆叠方程 → 最小二乘求解
+-- **参数可辨识性**：识别线性相关/冗余参数并剔除（否则解病态）
+-- **观测位形设计**：选哪些位姿去采样，直接决定辨识质量（最优实验设计）
+-
+-### 4.4 优化算法
+-- 最小二乘（LS）、加权最小二乘（WLS）
+-- **Levenberg–Marquardt**、约束优化
+-- 可选：Ceres / g2o / gtsam 等优化库
+-
+-### 4.5 视觉测量
+-- 相机模型（针孔 + 畸变）、相机标定
+-- 靶标检测：棋盘格 / Charuco / AprilTag
+-- 位姿解算（PnP）
+-- 手眼标定（解 **AX = XB**）
+-
+-### 4.6 评估标准
+-- 重复性（repeatability）vs 精度（accuracy）的区别
+-- 标定前后对比、**ISO 9283** 机器人性能标准
+-
+----
+-
+-## 五、分阶段实施路线图
+-
+-### Phase 0 — 需求与调研（1~2 周）
+-**交付物**：一页需求定义 + 技术选型结论
+-- 明确：机器人品牌/型号、精度目标（0.1mm 还是 0.01mm？）、是否允许停机
+-- 确认机器人控制器的开放程度（能否改运动学参数，还是只能外部补偿）
+-- 调研对标论文与开源项目
+-
+-### Phase 1 — 理论打底（2~4 周）
+-**交付物**：手写/整理的误差模型推导笔记
+-- 用 Python/Matlab 实现 FK、雅可比、误差雅可比
+-- 能自己写出 `误差 = J × 参数误差` 的完整推导
+-
+-### Phase 2 — 仿真验证（2~4 周）⚠ 最关键
+-**交付物**：一套"虚拟标定"仿真，辨识算法能在仿真里收敛
+-- 生成一个"带真实参数误差"的虚拟机器人
+-- 模拟采集若干位姿，用最小二乘反解参数
+-- 验证：参数恢复精度、噪声影响、观测位形对结果的影响
+-- **没有这一步就上硬件，会浪费大量时间**
+-
+-### Phase 3 — 硬件选型与平台搭建
+-**交付物**：可用的测量平台
+-- 相机选型（工业相机/深度相机）、镜头、标定板制作
+-- 机器人与相机、靶标的安装与通信打通
+-
+-### Phase 4 — 测量系统实现
+-**交付物**：稳定输出末端位姿的测量模块
+-- 相机标定 → 靶标检测 → 位姿解算 → 手眼标定
+-- 测量重复性自检（同一位置多次测量看抖动）
+-
+-### Phase 5 — 标定算法实现（核心集成）
+-**交付物**：端到端标定程序
+-- 自动规划采样位形 → 采集 → 参数辨识 → 补偿 → 复测验证
+-- 输出标定报告（前后精度对比）
+-
+-### Phase 6 — 集成、评估与迭代
+-**交付物**：通过验收的标定系统
+-- 全工作空间精度评估（按 ISO 9283）
+-- 现场工况测试（负载、温度、长时间稳定性）
+-- 迭代优化采样策略与算法
+-
+----
+-
+-## 六、技术栈与工具建议
+-
+-| 类别 | 推荐 |
+-|---|---|
+-| 语言 | Python（原型/算法）→ C++（部署/实时） |
+-| 数值计算 | NumPy / SciPy / (可选 Eigen) |
+-| 优化库 | SciPy.optimize → Ceres / g2o / gtsam |
+-| 视觉 | OpenCV + Charuco / AprilTag |
+-| 机器人集成 | ROS2、机器人 SDK（KRL / RAPID / URScript 等） |
+-| 仿真 | PyBullet / MuJoCo / CoppeliaSim / Matlab |
+-| 参考标准 | ISO 9283 |
+-
+----
+-
+-## 七、关键决策点与风险
+-
+-1. **机器人开放程度**（最重要）：很多工业机器人不开放底层运动学参数，此时只能做"离线补偿"（修改目标位姿）而非"改参数"。开工前务必确认。
+-2. **精度目标决定方案**：>0.1 mm 视觉可做；<0.01 mm 基本必须激光跟踪仪。
+-3. **补偿方式**：改控制器参数 / 离线反补偿 / 在线修正，三者的实现难度与效果差异很大。
+-4. **采样位形设计**：随便采样会导致辨识病态、结果不稳定，这是新手最容易踩的坑。
+-5. **温度/负载柔性**：高精度场景下，机器人热膨胀与重力变形不可忽略，需要把柔度也纳入标定。
+-
+----
+-
+-## 八、参考资源（起步）
+-
+-**教材**
+-- 《机器人学导论》 John J. Craig
+-- 《机器人建模与控制》 Spong 等
+-- 《A Mathematical Introduction to Robotic Manipulation》(POE/李群)
+-
+-**论文关键词**（搜索用）
+-- robot kinematic calibration
+-- hand-eye calibration / AX=XB
+-- kinematic parameter identification / error model
+-- observability / optimal measurement pose selection
+-
+-**开源项目**
+-- ROS `industrial_calibration`、`easy_handeye`、`Kalibr`
+-- AprilTag / ChArUco 标记库
+-
+----
+-
+-## 九、建议的"第一步"
+-
+-如果你现在只想做一件事，就从 **Phase 2 仿真** 入手：
+-用 Python 造一个带参数误差的 6 轴虚拟机器人，尝试用最小二乘把参数误差辨识回来。
+-这一步能让你同时理解：运动学、误差建模、参数辨识、可辨识性——几乎是整个项目的理论浓缩。
